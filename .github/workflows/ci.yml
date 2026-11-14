@@ -1,0 +1,56 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: santa
+          POSTGRES_PASSWORD: santa
+          POSTGRES_DB: santa_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U santa"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      SANTA_TEST_DB: postgres://santa:santa@localhost:5432/santa_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: backend
+      - name: fmt
+        run: cargo fmt --manifest-path backend/Cargo.toml -- --check
+      - name: clippy
+        run: cargo clippy --manifest-path backend/Cargo.toml --all-targets -- -D warnings
+      - name: tests (unit + интеграционные на Postgres)
+        run: cargo test --manifest-path backend/Cargo.toml
+
+  frontend:
+    if: ${{ hashFiles('frontend/package.json') != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+      - run: pnpm --dir frontend install --frozen-lockfile
+      - run: pnpm --dir frontend build

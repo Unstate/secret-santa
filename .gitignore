@@ -1,0 +1,12 @@
+# Rust
+/backend/target/
+
+# Node
+node_modules/
+/frontend/dist/
+
+# Окружение
+.env
+
+# Прочее
+*.log

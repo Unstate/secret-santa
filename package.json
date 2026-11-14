@@ -1,0 +1,14 @@
+{
+  "name": "secret-santa",
+  "private": true,
+  "scripts": {
+    "prepare": "husky",
+    "lint:backend": "cargo clippy --manifest-path backend/Cargo.toml --all-targets -- -D warnings",
+    "test:backend": "cargo test --manifest-path backend/Cargo.toml",
+    "typecheck:frontend": "pnpm --dir frontend typecheck",
+    "build:frontend": "pnpm --dir frontend build"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7"
+  }
+}

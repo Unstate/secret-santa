@@ -1,0 +1,37 @@
+//! Роуты API по фичам. Каждый файл — самостоятельная фича со своими DTO.
+
+pub mod exclusions;
+pub mod rooms;
+pub mod shuffle;
+pub mod tools;
+pub mod wishlist;
+pub mod ws;
+
+use axum::{
+    Router,
+    routing::{get, patch, post, put},
+};
+
+use crate::state::AppState;
+
+pub fn router() -> Router<AppState> {
+    Router::new()
+        .route("/rooms", post(rooms::create_room))
+        .route(
+            "/rooms/{code}",
+            get(rooms::get_room).patch(rooms::patch_room),
+        )
+        .route("/rooms/{code}/join", post(rooms::join))
+        .route("/rooms/{code}/exclusions", put(exclusions::put_exclusions))
+        .route("/rooms/{code}/shuffle", post(shuffle::shuffle))
+        .route("/rooms/{code}/me/assignment", get(shuffle::my_assignment))
+        .route("/rooms/{code}/assignments", get(shuffle::all_assignments))
+        .route("/rooms/{code}/wishlist", get(wishlist::list_wishlist))
+        .route("/rooms/{code}/wishlist/items", post(wishlist::add_item))
+        .route(
+            "/rooms/{code}/wishlist/items/{id}",
+            patch(wishlist::patch_item).delete(wishlist::delete_item),
+        )
+        .route("/tools/parse-product", post(tools::parse_product))
+        .route("/rooms/{code}/ws", get(ws::room_ws))
+}
