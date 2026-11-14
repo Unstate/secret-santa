@@ -1,6 +1,0 @@
-# Полная проверка: упавший билд не уедет в master.
-cargo test --manifest-path backend/Cargo.toml
-
-if [ -f frontend/package.json ]; then
-  pnpm --dir frontend build
-fi

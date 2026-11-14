@@ -8,6 +8,17 @@
 - `frontend/` — фронтенд (FSD: app / features / widgets / shared).
 - `docs/` — дизайн-документы.
 
+## Структура репозитория
+
+- `backend/`, `frontend/` — код приложения
+- `docs/` — дизайн-документы: [BACKEND.md](docs/BACKEND.md) (архитектура API),
+  [LOCAL_SETUP.md](docs/LOCAL_SETUP.md) (подъём бекенда для фронта)
+- `Dockerfile` — многостадийная сборка образа: фронт + бекенд в одном контейнере
+- `docker-compose.yml` — дев-Postgres; `docker-compose.prod.yml` — прод (app + Postgres)
+- `.github/workflows/` — CI (fmt/clippy/test) и авто-деплой из master
+- `scripts/dev-seed.sh` — тестовая комната с токенами для разработки фронта
+- `.env.example` — шаблон переменных окружения (реальный `.env` в git не ходит)
+
 ## Локальная разработка
 
 Нужны: Rust stable, Node 24 + pnpm, PostgreSQL 17+.
@@ -20,7 +31,7 @@
 docker compose up -d db                          # или свой Postgres
 cp .env.example .env
 cargo run --manifest-path backend/Cargo.toml     # API на :8080, миграции — автоматически
-pnpm install && pnpm --dir frontend dev          # фронт на :5173
+pnpm --dir frontend install && pnpm --dir frontend dev   # фронт на :5173
 scripts/dev-seed.sh 4                            # тестовая комната + токены игроков
 ```
 
@@ -34,15 +45,6 @@ cargo test --manifest-path backend/Cargo.toml
 SANTA_TEST_DB=postgres://santa:santa@localhost:5432/santa \
   cargo test --manifest-path backend/Cargo.toml
 ```
-
-## Хуки git (husky)
-
-После `git init` и `pnpm install` в корне включаются хуки:
-
-- `pre-commit` — быстрое: `cargo fmt --check`, `cargo clippy -D warnings`,
-  typecheck фронта;
-- `pre-push` — полная проверка: `cargo test` + сборка фронта
-  (упавший билд не уедет в master).
 
 ## CI/CD (GitHub Actions)
 

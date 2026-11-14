@@ -331,10 +331,9 @@ runner       alpine:3.21    — ca-certificates, бинарник, dist/, HEALTH
 - **deploy.yml**: push в `master` → docker build/push в GHCR (теги `latest` и
   sha) → ssh-деплой: `docker compose pull && up -d`. Секреты: `DEPLOY_HOST`,
   `DEPLOY_USER`, `DEPLOY_SSH_KEY`.
-- **Husky**: `pre-commit` — fmt + clippy + typecheck фронта (быстрое);
-  `pre-push` — полный `cargo test` + сборка фронта. Требование «билд упал —
-  коммит не пройдёт» выполняется на pre-push: полный билд в pre-commit
-  замедлил бы каждый коммит и научил бы команду `--no-verify`.
+- **Husky** — живёт во `frontend/` и настраивается командой фронта (в корне
+  репозитория его нет). Бекендовые проверки в любом случае гейтит CI:
+  fmt / clippy `-D warnings` / тесты на каждый PR и push в `master`.
 
 ---
 

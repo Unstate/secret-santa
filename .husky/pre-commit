@@ -1,7 +1,0 @@
-# Быстрые проверки — полная сборка и тесты в pre-push и CI.
-cargo fmt --manifest-path backend/Cargo.toml -- --check
-cargo clippy --manifest-path backend/Cargo.toml --all-targets -- -D warnings
-
-if [ -f frontend/package.json ]; then
-  pnpm --dir frontend typecheck
-fi
