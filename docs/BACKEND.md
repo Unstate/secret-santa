@@ -321,18 +321,21 @@ backend/Dockerfile
 frontend/Dockerfile
   dependencies node:24-alpine — npm ci по package-lock.json
   build        node:24-alpine — npm run build → dist
-  runner       nginx:1.29-alpine — статика + обратный прокси /api и /healthz
-                                  на сервис backend (WebSocket-апгрейд включён)
+  runner       caddy:2-alpine  — статика + обратный прокси /api и /healthz
+                                  на сервис backend + авто-HTTPS (Let's Encrypt:
+                                  выпуск, редирект и продление — сам, домен из
+                                  env DOMAIN)
 ```
 
-Один origin в проде держит nginx-прокси, поэтому release-бекенду CORS по-прежнему
+Один origin в проде держит caddy-прокси, поэтому release-бекенду CORS по-прежнему
 не нужен (axum раздаёт `/api/v1` + статику из `dist/` только в локальной
 сборке, когда рядом лежит `dist/`).
 
 - Локально: `docker-compose.yml` (только Postgres), приложение — `cargo run`,
   фронт — `npm run dev` из `frontend/`.
-- Прод: `docker-compose.prod.yml` — frontend (порт 80) + backend + Postgres
-  с volume и healthcheck. **Без `restart: always/unless-stopped`**: контейнеры
+- Прод: `docker-compose.prod.yml` — frontend (порты 80/443, авто-HTTPS через
+  env `DOMAIN`) + backend + Postgres с volume и healthcheck. **Без
+  `restart: always/unless-stopped`**: контейнеры
   стартуют только по команде `docker compose up -d` и не поднимаются после
   перезагрузки машины сами.
 - **ci.yml**: fmt / clippy `-D warnings` / тесты бекенда с сервисом Postgres

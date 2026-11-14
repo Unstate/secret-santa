@@ -13,9 +13,10 @@
 - `backend/`, `frontend/` — код приложения (в каждой папке свой многостадийный
   `Dockerfile`)
 - `docs/` — дизайн-документы: [BACKEND.md](docs/BACKEND.md) (архитектура API),
-  [LOCAL_SETUP.md](docs/LOCAL_SETUP.md) (подъём бекенда для фронта)
+  [LOCAL_SETUP.md](docs/LOCAL_SETUP.md) (подъём бекенда для фронта),
+  [TODO.md](docs/TODO.md) (что осталось), [BUGS.md](docs/BUGS.md) (грабли)
 - `docker-compose.yml` — дев-Postgres; `docker-compose.prod.yml` — прод
-  (frontend-nginx + backend + Postgres, без автозапуска при перезагрузке)
+  (frontend-Caddy с авто-HTTPS + backend + Postgres, без автозапуска при перезагрузке)
 - `.github/workflows/` — CI (fmt/clippy/test) и авто-деплой из master
 - `scripts/dev-seed.sh` — тестовая комната с токенами для разработки фронта
 - `.env.example` — шаблон переменных окружения (реальный `.env` в git не ходит)
@@ -59,5 +60,8 @@ SANTA_TEST_DB=postgres://santa:santa@localhost:5432/santa \
 
 1. секреты репозитория: `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_SSH_KEY`;
 2. на сервере в `/opt/secret-santa` — `docker-compose.prod.yml` с вашим
-   `image: ghcr.io/<owner>/<repo>:latest`;
-3. `docker login ghcr.io` на сервере (или public package в GHCR).
+   `image: ghcr.io/<owner>/<repo>-…:latest` и файл `.env` со строкой
+   `DOMAIN=ваш-домен` (домен — с A-записью на IP сервера);
+3. на сервере открыты порты 80/443 — Caddy сам получит сертификат Let's Encrypt;
+4. `docker login ghcr.io` на сервере (или public package в GHCR); без GHCR
+   образы соберутся на сервере сами при первом `docker compose up -d`.

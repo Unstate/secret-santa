@@ -3,8 +3,15 @@ services:
     image: ghcr.io/OWNER/REPO-frontend:latest
     build: ./frontend
     restart: "no"
+    environment:
+      DOMAIN: ${DOMAIN:-localhost}
     ports:
       - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
     depends_on:
       backend:
         condition: service_healthy
@@ -14,7 +21,7 @@ services:
     build: ./backend
     restart: "no"
     environment:
-      DATABASE_URL: postgres://santa:santa@db:5432/santa
+      DATABASE_URL: postgres://santa:${DB_PASSWORD:-santa}@db:5432/santa
       PORT: "8080"
       RUST_LOG: info
     depends_on:
@@ -26,7 +33,7 @@ services:
     restart: "no"
     environment:
       POSTGRES_USER: santa
-      POSTGRES_PASSWORD: santa
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-santa}
       POSTGRES_DB: santa
     volumes:
       - pgdata:/var/lib/postgresql/data
@@ -38,3 +45,5 @@ services:
 
 volumes:
   pgdata:
+  caddy_data:
+  caddy_config:

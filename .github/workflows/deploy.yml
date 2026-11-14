@@ -55,5 +55,6 @@ jobs:
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           script: |
             cd /opt/secret-santa
-            docker compose pull
+            # образов ещё нет в GHCR (первый деплой) — соберутся локально
+            docker compose pull || true
             docker compose up -d
