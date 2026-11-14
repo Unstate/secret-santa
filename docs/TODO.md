@@ -5,14 +5,13 @@
 
 ## Прямо сейчас
 
-- [ ] Запушить в GitHub: локальная ветка ушла вперёд, PAT не пускает `.github/*`
-  без `workflow`-скоупа. Решение — SSH: `git remote set-url origin git@github.com:Unstate/secret-santa.git`
-  и добавить ключ в GitHub, затем `git push origin master`.
+- [ ] Закоммитить и запушить фикс ci.yml: `hashFiles()` в job-level `if`
+  отбраковывал весь файл (детали в BUGS.md), джоба фронта переведена
+  с pnpm на npm.
 - [ ] Проверить WB-парсер из домашней сети: `card.wb.ru` отдаёт 403 с текущего IP
   (анти-бот). Код написан по спецификации, но боем не проверен.
-- [ ] Собрать Docker-образы (`docker compose -f docker-compose.prod.yml build`):
-  демон Docker на рабочей машине не был запущен, сборка не проверена — заодно
-  это сделает CI при первом пуше.
+- [x] ~~Собрать Docker-образы~~ — CI собрал оба образа и запушил в GHCR
+  (build-push ✓).
 
 ## Фронтенд (следующий этап)
 
@@ -50,6 +49,9 @@
   `.env` (`DOMAIN=…`, `DB_PASSWORD=…`), порты 80/443 открыты.
 - [ ] Первый `docker compose up -d`; проверить `https://домен/healthz`.
 - [ ] Секреты репозитория: `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_SSH_KEY`.
+  Без них deploy.yml честно падает на последнем шаге (сборка в GHCR при этом
+  проходит). Образы в GHCR приватные по умолчанию — на сервере нужен
+  `docker login ghcr.io` (или сделать package public).
 
 ## Настроено, не трогать
 

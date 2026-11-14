@@ -5,6 +5,16 @@
 
 ## Фронтенд / сборка
 
+### ci.yml падает за 0 секунд: «Unrecognized named-value: 'hashFiles'» (15.11)
+- **Симптом:** run по `.github/workflows/ci.yml` завершается за 0s, чек-ранов
+  нет, баннер «This run likely failed because of a workflow file issue».
+- **Причина:** `hashFiles()` недоступна в job-level `if` (контекст ещё не
+  вычислен) — раннер отбраковывает весь файл на парсинге.
+- **Решение:** условие перенести внутрь шага (`if:` у `steps`) или убрать
+  совсем — гейт «когда появится frontend/package.json» удалён, фронт в репо
+  постоянно. Проверять файлы workflow локально: `python3 -c "import yaml;
+  yaml.safe_load(open(path))"` ловит только YAML, но не семантику Actions.
+
 ### WS-события приходили с snake_case-полями (15.11)
 - **Симптом:** по WS `"player_id"`, в REST — `playerId`.
 - **Причина:** `#[serde(rename_all = "camelCase")]` на enum переименовывает
