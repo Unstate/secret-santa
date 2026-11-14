@@ -9,7 +9,13 @@ use tokio::sync::broadcast;
 use uuid::Uuid;
 
 #[derive(Debug, Clone, Serialize)]
-#[serde(tag = "type", rename_all = "camelCase")]
+// rename_all — для имён вариантов, rename_all_fields — для полей:
+// клиент ожидает camelCase и в типе события, и в его данных.
+#[serde(
+    tag = "type",
+    rename_all = "camelCase",
+    rename_all_fields = "camelCase"
+)]
 pub enum RoomEvent {
     RoomUpdated {
         name: String,

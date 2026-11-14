@@ -10,18 +10,19 @@
 
 ## Структура репозитория
 
-- `backend/`, `frontend/` — код приложения
+- `backend/`, `frontend/` — код приложения (в каждой папке свой многостадийный
+  `Dockerfile`)
 - `docs/` — дизайн-документы: [BACKEND.md](docs/BACKEND.md) (архитектура API),
   [LOCAL_SETUP.md](docs/LOCAL_SETUP.md) (подъём бекенда для фронта)
-- `Dockerfile` — многостадийная сборка образа: фронт + бекенд в одном контейнере
-- `docker-compose.yml` — дев-Postgres; `docker-compose.prod.yml` — прод (app + Postgres)
+- `docker-compose.yml` — дев-Postgres; `docker-compose.prod.yml` — прод
+  (frontend-nginx + backend + Postgres, без автозапуска при перезагрузке)
 - `.github/workflows/` — CI (fmt/clippy/test) и авто-деплой из master
 - `scripts/dev-seed.sh` — тестовая комната с токенами для разработки фронта
 - `.env.example` — шаблон переменных окружения (реальный `.env` в git не ходит)
 
 ## Локальная разработка
 
-Нужны: Rust stable, Node 24 + pnpm, PostgreSQL 17+.
+Нужны: Rust stable, Node 24 + npm, PostgreSQL 17+.
 
 Пошаговая инструкция для разработки фронтенда (три способа поднять Postgres,
 тестовые данные, шпаргалка по API) —
@@ -31,7 +32,7 @@
 docker compose up -d db                          # или свой Postgres
 cp .env.example .env
 cargo run --manifest-path backend/Cargo.toml     # API на :8080, миграции — автоматически
-pnpm --dir frontend install && pnpm --dir frontend dev   # фронт на :5173
+npm --prefix frontend install && npm --prefix frontend run dev   # фронт на :5173
 scripts/dev-seed.sh 4                            # тестовая комната + токены игроков
 ```
 
@@ -50,8 +51,8 @@ SANTA_TEST_DB=postgres://santa:santa@localhost:5432/santa \
 
 - **ci.yml** — на PR и push в `master`: fmt/clippy/тесты бекенда (интеграционные
   идут против сервиса Postgres) + сборка фронта, когда он появится.
-- **deploy.yml** — на push в `master`: сборка образа (стадии `dependencies` →
-  `build` → `rust-build` → `runner` на node:24-alpine/rust/alpine) → GHCR →
+- **deploy.yml** — на push в `master`: сборка двух образов (`backend/Dockerfile`
+  и `frontend/Dockerfile`) → GHCR (`<repo>-backend`, `<repo>-frontend`) →
   ssh-деплой: `docker compose pull && docker compose up -d`.
 
 Настройка деплоя:

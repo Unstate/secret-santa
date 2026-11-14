@@ -1,7 +1,4 @@
 #!/usr/bin/env bash
-# Создаёт дев-комнату с игроками и печатает токены для разработки фронта.
-# Использование: scripts/dev-seed.sh [игроков 1..8] [адрес API]
-# Пример: scripts/dev-seed.sh 4 http://localhost:8080/api/v1
 set -euo pipefail
 
 API="${2:-http://localhost:8080/api/v1}"

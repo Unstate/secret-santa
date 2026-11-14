@@ -417,4 +417,7 @@ async fn ws_broadcasts_player_joined() {
     let event: Value = serde_json::from_str(&message.into_text().unwrap()).unwrap();
     assert_eq!(event["type"], json!("playerJoined"));
     assert_eq!(event["name"], json!("Боря"));
+    // Поля событий — camelCase, как и во всём REST-контракте.
+    assert!(event["playerId"].is_string());
+    assert!(event["player_id"].is_null());
 }

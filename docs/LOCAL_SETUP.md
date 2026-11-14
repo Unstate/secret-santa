@@ -12,7 +12,7 @@
 | PostgreSQL 17+ | база (любой способ из шага 2) | `psql --version` |
 | curl | ручные запросы, сид-скрипт | — |
 | python3 | сид-скрипт разбирает ответы | `python3 --version` |
-| Node 24 + pnpm | сам фронт (бекенду не нужен) | `node --version` |
+| Node 24 + npm | сам фронт (бекенду не нужен) | `node --version` |
 
 Нет Rust: `curl https://sh.rustup.rs -sSf | sh`.
 

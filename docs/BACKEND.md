@@ -308,29 +308,40 @@ backend/tests/
 
 ## 10. Docker / CI / CD (реализовано)
 
-**Один контейнер** (`Dockerfile` в корне): axum раздаёт `/api/v1` + статику
-фронта из `dist/` (`ServeDir` + fallback на `index.html` для SPA-роутов).
-nginx не нужен.
-
-Стадии Dockerfile:
+**Два образа, собираются раздельно** (контексты — `backend/` и `frontend/`,
+склеивает `docker-compose.prod.yml` из корня):
 
 ```
-dependencies node:24-alpine — deps фронта (без фронта стадия — no-op)
-build        node:24-alpine — pnpm build → dist (или заглушка-страница)
-rust-build   rust:1-alpine  — кэш зависимостей через фиктивные lib/main,
-                              затем реальная сборка (musl, rustls)
-runner       alpine:3.21    — ca-certificates, бинарник, dist/, HEALTHCHECK
+backend/Dockerfile
+  rust-build   rust:1-alpine  — кэш зависимостей через фиктивные lib/main,
+                                затем реальная сборка (musl, rustls)
+  runner       alpine:3.21    — ca-certificates, бинарник, HEALTHCHECK;
+                                миграции зашиты внутрь sqlx::migrate!()
+
+frontend/Dockerfile
+  dependencies node:24-alpine — npm ci по package-lock.json
+  build        node:24-alpine — npm run build → dist
+  runner       nginx:1.29-alpine — статика + обратный прокси /api и /healthz
+                                  на сервис backend (WebSocket-апгрейд включён)
 ```
 
-- Локально: `docker-compose.yml` (только Postgres), приложение — `cargo run`.
-- Прод: `docker-compose.prod.yml` (app из GHCR + Postgres с volume и
-  healthcheck).
+Один origin в проде держит nginx-прокси, поэтому release-бекенду CORS по-прежнему
+не нужен (axum раздаёт `/api/v1` + статику из `dist/` только в локальной
+сборке, когда рядом лежит `dist/`).
+
+- Локально: `docker-compose.yml` (только Postgres), приложение — `cargo run`,
+  фронт — `npm run dev` из `frontend/`.
+- Прод: `docker-compose.prod.yml` — frontend (порт 80) + backend + Postgres
+  с volume и healthcheck. **Без `restart: always/unless-stopped`**: контейнеры
+  стартуют только по команде `docker compose up -d` и не поднимаются после
+  перезагрузки машины сами.
 - **ci.yml**: fmt / clippy `-D warnings` / тесты бекенда с сервисом Postgres
   (`SANTA_TEST_DB` — интеграционные гоняются в CI); фронт-джоба включается
   автоматически, когда появится `frontend/package.json`.
-- **deploy.yml**: push в `master` → docker build/push в GHCR (теги `latest` и
-  sha) → ssh-деплой: `docker compose pull && up -d`. Секреты: `DEPLOY_HOST`,
-  `DEPLOY_USER`, `DEPLOY_SSH_KEY`.
+- **deploy.yml**: push в `master` → docker build/push **двух образов** в GHCR
+  (`<repo>-backend`, `<repo>-frontend`, теги `latest` и sha) → ssh-деплой:
+  `docker compose pull && up -d`. Секреты: `DEPLOY_HOST`, `DEPLOY_USER`,
+  `DEPLOY_SSH_KEY`.
 - **Husky** — живёт во `frontend/` и настраивается командой фронта (в корне
   репозитория его нет). Бекендовые проверки в любом случае гейтит CI:
   fmt / clippy `-D warnings` / тесты на каждый PR и push в `master`.

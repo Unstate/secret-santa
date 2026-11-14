@@ -1,22 +1,29 @@
-# Прод-окружение: образ собирает .github/workflows/deploy.yml и кладёт в GHCR.
-# Перед первым деплоем замените image на свой репозиторий (в нижнем регистре).
 services:
-  app:
-    image: ghcr.io/OWNER/REPO:latest
-    restart: unless-stopped
+  frontend:
+    image: ghcr.io/OWNER/REPO-frontend:latest
+    build: ./frontend
+    restart: "no"
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+  backend:
+    image: ghcr.io/OWNER/REPO-backend:latest
+    build: ./backend
+    restart: "no"
     environment:
       DATABASE_URL: postgres://santa:santa@db:5432/santa
       PORT: "8080"
       RUST_LOG: info
-    ports:
-      - "80:8080"
     depends_on:
       db:
         condition: service_healthy
 
   db:
     image: postgres:17-alpine
-    restart: unless-stopped
+    restart: "no"
     environment:
       POSTGRES_USER: santa
       POSTGRES_PASSWORD: santa

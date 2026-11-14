@@ -1,5 +1,3 @@
-# Локальная разработка: только Postgres, бекенд запускается нативно
-# (cargo run из backend/), фронт — pnpm dev из frontend/.
 services:
   db:
     image: postgres:17-alpine
