@@ -1,0 +1,9 @@
+{
+  "name": "secret-santa",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "preversion": "npm --prefix frontend run lint && npm --prefix frontend run build && cargo build --manifest-path backend/Cargo.toml --quiet",
+    "version": "node scripts/sync-version.mjs && git add frontend/package.json frontend/package-lock.json backend/Cargo.toml"
+  }
+}

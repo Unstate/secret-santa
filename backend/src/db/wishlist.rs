@@ -10,9 +10,7 @@ pub struct WishlistItem {
     pub title: String,
     pub url: Option<String>,
     pub image_url: Option<String>,
-    /// Копейки.
     pub price: Option<i64>,
-    /// `None` — наличие неизвестно (ручной ввод).
     pub in_stock: Option<bool>,
     pub source: String,
 }
@@ -23,7 +21,6 @@ pub struct NewItem<'a> {
     pub title: &'a str,
     pub url: Option<&'a str>,
     pub image_url: Option<&'a str>,
-    /// Копейки.
     pub price: Option<i64>,
     pub in_stock: Option<bool>,
     pub source: &'a str,
@@ -58,7 +55,6 @@ pub async fn find_by_id(db: impl PgExecutor<'_>, id: Uuid) -> sqlx::Result<Optio
     .await
 }
 
-/// Полное обновление редактируемых полей (хендлер сначала читает и мержит).
 pub async fn update(db: impl PgExecutor<'_>, item: &WishlistItem) -> sqlx::Result<WishlistItem> {
     sqlx::query_as::<_, WishlistItem>(
         "update wishlist_items set title = $2, url = $3, image_url = $4, price = $5, in_stock = $6, source = $7
@@ -76,7 +72,6 @@ pub async fn update(db: impl PgExecutor<'_>, item: &WishlistItem) -> sqlx::Resul
     .await
 }
 
-/// `false` — товара с таким id не было.
 pub async fn delete(db: impl PgExecutor<'_>, id: Uuid) -> sqlx::Result<bool> {
     let result = sqlx::query("delete from wishlist_items where id = $1")
         .bind(id)

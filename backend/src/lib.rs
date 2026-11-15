@@ -1,8 +1,3 @@
-//! Бекенд Тайного Санты: axum + sqlx (Postgres) + WebSocket.
-//!
-//! Собран как lib + тонкий bin: интеграционные тесты из `tests/`
-//! используют этот крейт напрямую.
-
 pub mod auth;
 pub mod db;
 pub mod domain;
@@ -24,14 +19,11 @@ use tower_http::{
 
 use crate::state::AppState;
 
-/// Роутер приложения: `/api/v1/*` + `/healthz`, плюс статика фронта из
-/// `dist/`, если она собрана (в дев-режиме фронта нет — отдаётся только API).
 pub fn build_router(state: AppState) -> Router {
     let app = Router::new()
         .nest("/api/v1", routes::router())
         .route("/healthz", get(|| async { "ok" }))
         .layer(TraceLayer::new_for_http())
-        // dev: фронт крутится на :5173 — нужен CORS; в проде всё с одного origin.
         .layer(if cfg!(debug_assertions) {
             CorsLayer::very_permissive()
         } else {
@@ -40,7 +32,6 @@ pub fn build_router(state: AppState) -> Router {
         .with_state(state);
 
     match std::path::Path::new("dist").exists() {
-        // SPA: неизвестные пути отдаём index.html.
         true => {
             app.fallback_service(ServeDir::new("dist").fallback(ServeFile::new("dist/index.html")))
         }
@@ -48,7 +39,6 @@ pub fn build_router(state: AppState) -> Router {
     }
 }
 
-/// Точка входа: конфиг из окружения, пул БД, миграции, HTTP-сервер.
 pub async fn run() -> anyhow::Result<()> {
     let _ = dotenvy::dotenv();
 

@@ -14,7 +14,7 @@ export class ApiError extends Error {
 
 export interface ApiClientDeps {
   baseUrl: string
-  getToken?: () => string | null
+  getToken?: (path: string) => string | null
   fetch?: typeof fetch
 }
 
@@ -22,7 +22,7 @@ type Json = unknown
 
 export class ApiClient {
   private readonly baseUrl: string
-  private readonly getToken: () => string | null
+  private readonly getToken: (path: string) => string | null
   private readonly fetchImpl: typeof fetch
 
   constructor(deps: ApiClientDeps) {
@@ -36,7 +36,7 @@ export class ApiClient {
     if (init.body != null && !headers.has('content-type')) {
       headers.set('content-type', 'application/json')
     }
-    const token = this.getToken()
+    const token = this.getToken(path)
     if (token != null && !headers.has('authorization')) {
       headers.set('authorization', `Bearer ${token}`)
     }

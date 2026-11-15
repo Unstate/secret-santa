@@ -1,5 +1,3 @@
-//! Исключения: «игроку А не может достаться игрок B». Только организатор.
-
 use std::collections::{BTreeSet, HashMap};
 
 use axum::{
@@ -16,7 +14,6 @@ use crate::{
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ExclusionsRequest {
-    /// Полная замена списка (проще для UI, чем дифф).
     exclusions: Vec<ExclusionPair>,
 }
 
@@ -46,7 +43,6 @@ pub async fn put_exclusions(
     if organizer.room_id != room.id {
         return Err(ApiError::Forbidden);
     }
-    // Исключения имеет смысл менять только до шафла.
     if room.status != "lobby" {
         return Err(ApiError::WrongStatus);
     }
@@ -74,8 +70,6 @@ pub async fn put_exclusions(
         blocked.insert((giver, recipient));
     }
 
-    // Разрешимость проверяем сразу: организатор должен увидеть проблему при
-    // вводе исключений, а не в момент шафла (docs/BACKEND.md §7).
     let names: Vec<&str> = players.iter().map(|player| player.name.as_str()).collect();
     if !validate::perfect_matching_exists(players.len(), &blocked) {
         return Err(ApiError::ShuffleImpossible(

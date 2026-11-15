@@ -1,8 +1,3 @@
-//! Парсер Ozon: артикул → og-теги страницы товара, best effort.
-//! Ozon агрессивно защищается анти-ботом (челленджи, капчи): при 403 или
-//! заглушке отдаём `ParseError::Unavailable` — ссылка всё равно генерируется
-//! из кода, а фронт показывает ручной ввод названия.
-
 use std::time::Duration;
 
 use scraper::{Html, Selector};
@@ -73,7 +68,6 @@ impl ProductParser for OzonParser {
         let page = self.page(code).await?;
         let html = Html::parse_document(&page);
 
-        // og:price:amount — цена в рублях (иногда дробная); храним в копейках.
         let price = meta_content(&html, "og:price:amount")
             .and_then(|raw| raw.replace(',', ".").trim().parse::<f64>().ok())
             .map(|rubles| (rubles * 100.0).round() as i64);
@@ -85,7 +79,6 @@ impl ProductParser for OzonParser {
             title: meta_content(&html, "og:title"),
             image_url: meta_content(&html, "og:image"),
             price,
-            // по og-тегам наличие надёжно не определить — решит фронт/игрок
             in_stock: None,
         })
     }

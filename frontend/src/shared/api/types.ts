@@ -44,6 +44,7 @@ export interface PlayerWithToken extends Player {
 
 export interface RoomDetails extends Room {
   players: Player[]
+  me: Player
 }
 
 export interface CreateRoomRequest {

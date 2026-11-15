@@ -1,8 +1,3 @@
-//! Парсинг товаров вишлиста. Решение (15.11): пользователь выбирает
-//! маркетплейс радиобатоном и вводит артикул; ссылка генерируется из кода,
-//! метаданные подтягиваются best effort. Незапарсившийся товар не блокирует
-//! вишлист — fallback на ручной ввод.
-
 pub mod ozon;
 pub mod wildberries;
 
@@ -17,8 +12,6 @@ pub enum Source {
 }
 
 impl Source {
-    /// Ссылка строится детерминированно из артикула и доступна даже тогда,
-    /// когда метаданные получить не удалось. У ручного товара ссылки нет.
     pub fn product_link(self, code: &str) -> Option<String> {
         match self {
             Source::Wildberries => Some(format!(
@@ -38,9 +31,7 @@ pub struct ProductInfo {
     pub link: Option<String>,
     pub title: Option<String>,
     pub image_url: Option<String>,
-    /// Копейки.
     pub price: Option<i64>,
-    /// `None` — наличие неизвестно (например, ручной ввод).
     pub in_stock: Option<bool>,
 }
 

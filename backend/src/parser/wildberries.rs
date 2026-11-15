@@ -1,11 +1,3 @@
-//! Парсер Wildberries: артикул → карточка через публичный card-API
-//! (`card.wb.ru`), картинка — вычисление basket-хоста из волюма артикула
-//! с HEAD-проверкой (границы корзин у WB периодически сдвигаются).
-//!
-//! Внимание: WB режет запросы по IP (анти-бот для датацентров) — с некоторых
-//! сетей card API отвечает 403. Любая неудача — `ParseError::Unavailable`,
-//! вишлист это не блокирует (фронт покажет ручной ввод).
-
 use std::time::Duration;
 
 use super::{ParseError, ProductInfo, ProductParser, Source};
@@ -46,8 +38,6 @@ impl WildberriesParser {
         })
     }
 
-    /// Картинка: HEAD-проверяем расчётный basket-хост и соседей, берём первый
-    /// живой URL; ни один не ответил — `None` (товар без картинки).
     async fn image_url(&self, code: &str) -> Option<String> {
         let nm: u64 = code.parse().ok()?;
         let vol = nm / 1_000_000;
@@ -86,7 +76,6 @@ impl Default for WildberriesParser {
     }
 }
 
-/// Остатки товара: сумма qty по всем размерам карточки.
 fn stocks_qty(product: &serde_json::Value) -> u64 {
     product["sizes"]
         .as_array()
@@ -109,10 +98,6 @@ fn stocks_qty(product: &serde_json::Value) -> u64 {
         .unwrap_or(0)
 }
 
-/// Номер basket-хоста для волюма артикула (волюм = артикул / 1_000_000).
-/// Границы ранних корзин — по данным парсеров сообщества; с 15-й корзины
-/// диапазоны идут шагом 216 (по 215 волюмов на корзину). Соседи проверяются
-/// HEAD-запросом на случай сдвига границ.
 fn basket_number(vol: u64) -> u64 {
     const EARLY: &[(u64, u64)] = &[
         (143, 1),
@@ -157,7 +142,6 @@ impl ProductParser for WildberriesParser {
             .ok_or_else(|| ParseError::Unavailable("card API не нашёл такой товар".into()))?;
 
         let title = product["name"].as_str().map(str::to_owned);
-        // salePriceU — цена сразу в копейках, как и в нашей схеме.
         let price = product["salePriceU"].as_i64();
         let in_stock = Some(stocks_qty(product) > 0);
         let image_url = self.image_url(code).await;
@@ -186,7 +170,7 @@ mod tests {
         assert_eq!(basket_number(287), 2);
         assert_eq!(basket_number(288), 3);
         assert_eq!(basket_number(719), 4);
-        assert_eq!(basket_number(198), 2); // артикул 198 xxx xxx
+        assert_eq!(basket_number(198), 2);
         assert_eq!(basket_number(2189), 14);
         assert_eq!(basket_number(2190), 15);
         assert_eq!(basket_number(2406), 16);

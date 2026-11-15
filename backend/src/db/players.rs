@@ -47,7 +47,6 @@ pub async fn find_by_token_hash(
     .await
 }
 
-/// Имя игрока уникально в рамках комнаты (см. миграцию 0002).
 pub async fn find_by_name_in_room(
     db: impl PgExecutor<'_>,
     room_id: Uuid,
@@ -64,7 +63,6 @@ pub async fn find_by_name_in_room(
     .await
 }
 
-/// Стабильный порядок игроков — на нём строятся индексы шафла.
 pub async fn list_by_room(db: impl PgExecutor<'_>, room_id: Uuid) -> sqlx::Result<Vec<Player>> {
     sqlx::query_as::<_, Player>(
         "select id, room_id, name, avatar, is_organizer

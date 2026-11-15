@@ -1,6 +1,3 @@
-//! Проверка разрешимости шафла: существует ли полное паросочетание
-//! «кто дарит → кому дарит» с учётом исключений (алгоритм Куна).
-
 use std::collections::BTreeSet;
 
 pub fn allowed_recipients(
@@ -17,8 +14,6 @@ pub fn perfect_matching_exists(n: usize, blocked: &BTreeSet<(usize, usize)>) -> 
     find_matching(n, blocked).is_some()
 }
 
-/// Человекочитаемые причины невозможности — для UI организатора.
-/// Индексы в `blocked` соответствуют позициям в `names`.
 pub fn impossibility_reasons(names: &[&str], blocked: &BTreeSet<(usize, usize)>) -> Vec<String> {
     let mut reasons: Vec<String> = (0..names.len())
         .filter(|&giver| allowed_recipients(names.len(), blocked, giver).is_empty())
@@ -35,9 +30,6 @@ pub fn impossibility_reasons(names: &[&str], blocked: &BTreeSet<(usize, usize)>)
     reasons
 }
 
-/// Полное паросочетание: `result[giver] = recipient`, или `None`, если
-/// исключения делают шафл невозможным (например, двое могут дарить только
-/// третьему).
 pub fn find_matching(n: usize, blocked: &BTreeSet<(usize, usize)>) -> Option<Vec<usize>> {
     let adjacency: Vec<Vec<usize>> = (0..n)
         .map(|giver| allowed_recipients(n, blocked, giver))
@@ -83,7 +75,6 @@ pub fn find_matching(n: usize, blocked: &BTreeSet<(usize, usize)>) -> Option<Vec
     )
 }
 
-/// Защита от багов в генераторе: биекция, без self-gift, без запрещённых пар.
 pub fn validate_assignment(
     n: usize,
     blocked: &BTreeSet<(usize, usize)>,
@@ -119,14 +110,12 @@ mod tests {
             3,
             &BTreeSet::from([(0, 1)]),
             &[1, 2, 0]
-        )); // нарушено исключение
+        )); 
     }
 
     #[test]
     fn kuhn_finds_matching_or_reports_absence() {
-        // A и B могут дарить только C — полного паросочетания нет.
         assert!(find_matching(3, &BTreeSet::from([(0, 1), (1, 0)])).is_none());
-        // Цикл исключений A≠B, B≠C — решается A→C, B→A, C→B.
         assert_eq!(
             find_matching(3, &BTreeSet::from([(0, 1), (1, 2)])).unwrap(),
             vec![2, 0, 1]

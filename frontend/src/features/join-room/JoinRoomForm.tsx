@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router'
 import { z } from 'zod'
 import { ArrowRightIcon, Button, Card, Field, HashIcon, Input, useToast } from '@/shared/ui'
 import { usePost } from '@/shared/hooks'
+import { readSessionToken, saveSessionToken } from '@/shared/api'
 import { normalizeRoomCode } from '@/shared/lib/validation'
 import type { JoinRequest, JoinResponse } from '@/shared/api'
 import { loadPlayerProfile } from '@/features/player-profile/profile'
@@ -34,8 +35,14 @@ export function JoinRoomForm() {
     setError(null)
 
     const normalized = normalizeRoomCode(code)
+    if (readSessionToken(normalized) != null) {
+      toast.success('У тебя уже есть место в этой комнате')
+      navigate(`/room/${normalized}`)
+      return
+    }
     const result = await join.post({ name: profile.name.trim(), avatar: profile.avatarId })
     if (result.ok) {
+      saveSessionToken(normalized, result.data.player.token)
       navigate(`/room/${normalized}`)
     } else {
       toast.error(result.error.message)

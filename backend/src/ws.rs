@@ -1,6 +1,3 @@
-//! WebSocket-хаб комнат. События — только триггеры перерисовки:
-//! истина всегда в REST, после реконнекта клиент перечитывает состояние.
-
 use std::sync::Arc;
 
 use dashmap::DashMap;
@@ -9,8 +6,6 @@ use tokio::sync::broadcast;
 use uuid::Uuid;
 
 #[derive(Debug, Clone, Serialize)]
-// rename_all — для имён вариантов, rename_all_fields — для полей:
-// клиент ожидает camelCase и в типе события, и в его данных.
 #[serde(
     tag = "type",
     rename_all = "camelCase",
@@ -26,17 +21,14 @@ pub enum RoomEvent {
         name: String,
         avatar: i16,
     },
-    /// Пока без механизма выхода; появится вместе с киком игрока.
     #[allow(dead_code)]
     PlayerLeft {
         player_id: Uuid,
     },
-    /// Рассылается только организатору — фильтрация на этапе отправки.
     ExclusionsUpdated,
     WishlistUpdated {
         player_id: Uuid,
     },
-    /// Пары в событии не передаются никогда — только факт завершения шафла.
     ShuffleCompleted,
 }
 

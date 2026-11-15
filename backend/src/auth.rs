@@ -1,7 +1,3 @@
-//! Аутентификация: bearer-токен игрока → sha256 → поиск в БД.
-//! Extractor'ы axum: `AuthedPlayer` — любой участник комнаты,
-//! `Organizer` — только организатор (403 для остальных).
-
 use axum::{
     extract::FromRequestParts,
     http::{header::AUTHORIZATION, request::Parts},
@@ -14,7 +10,6 @@ pub fn hash_token(token: &str) -> String {
     hex::encode(Sha256::digest(token.as_bytes()))
 }
 
-/// 32 случайных байта в hex; наружу отдаётся один раз, в БД — только sha256.
 pub fn generate_token() -> String {
     use rand::RngCore;
 

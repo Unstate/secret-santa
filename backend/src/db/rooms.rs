@@ -11,7 +11,6 @@ pub struct Room {
     pub status: String,
 }
 
-/// Код приглашения без похожих символов (0/O, 1/I/L).
 const CODE_ALPHABET: &[u8] = b"ABCDEFGHJKMNPQRSTUVWXYZ23456789";
 
 fn generate_code() -> String {
@@ -27,7 +26,7 @@ pub async fn insert(conn: &mut sqlx::PgConnection, name: &str, budget: i32) -> s
     for _ in 0..8 {
         match insert_with_code(&mut *conn, &generate_code(), name, budget).await {
             Ok(room) => return Ok(room),
-            Err(sqlx::Error::Database(e)) if e.is_unique_violation() => continue, // коллизия кода
+            Err(sqlx::Error::Database(e)) if e.is_unique_violation() => continue,
             Err(e) => return Err(e),
         }
     }

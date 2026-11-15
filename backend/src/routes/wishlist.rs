@@ -1,6 +1,3 @@
-//! Вишлисты: свои items правит владелец, видны всем в комнате.
-//! Провал парсинга никогда не блокирует добавление (docs/BACKEND.md §8).
-
 use axum::{
     Json,
     extract::{Path, State},
@@ -24,14 +21,11 @@ fn source_str(source: Source) -> &'static str {
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AddItemRequest {
-    /// `manual` по умолчанию; для wb/ozon обязателен `code`.
     source: Option<Source>,
-    /// Код товара (артикул) — ссылка генерируется из него.
     code: Option<String>,
     title: Option<String>,
     url: Option<String>,
     image_url: Option<String>,
-    /// Копейки.
     price: Option<i64>,
     in_stock: Option<bool>,
 }
@@ -78,7 +72,6 @@ pub async fn add_item(
     }
     let mut in_stock = req.in_stock;
 
-    // Метаданные — best effort: не получили, значит берём то, что ввёл игрок.
     if let Some(product_code) = &product_code
         && let Ok(info) = state.parsers.parse(source, product_code).await
     {
@@ -132,7 +125,6 @@ pub struct PatchItemRequest {
     title: Option<String>,
     url: Option<String>,
     image_url: Option<String>,
-    /// Копейки.
     price: Option<i64>,
     in_stock: Option<bool>,
 }
@@ -220,7 +212,6 @@ pub async fn delete_item(
     Ok(StatusCode::NO_CONTENT)
 }
 
-/// Все вишлисты комнаты одним списком; фронт группирует по playerId.
 pub async fn list_wishlist(
     State(state): State<AppState>,
     Path(code): Path<String>,

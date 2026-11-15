@@ -1,7 +1,3 @@
-//! WebSocket комнаты: поток событий `RoomEvent`.
-//! Клиент не командует по WS — все мутации через REST;
-//! после реконнекта состояние перечитывается из REST (docs/BACKEND.md §6).
-
 use axum::{
     extract::{
         Path, Query, State,
@@ -54,7 +50,6 @@ async fn handle_socket(
                     Err(broadcast::error::RecvError::Lagged(_)) => continue,
                     Err(_) => break,
                 };
-                // Исключения видит только организатор (docs/BACKEND.md §4).
                 if matches!(event, RoomEvent::ExclusionsUpdated) && !is_organizer {
                     continue;
                 }
@@ -66,8 +61,6 @@ async fn handle_socket(
                 }
             }
             incoming = socket.recv() => {
-                // Клиент шлёт что угодно — протокол не командный; соединение
-                // живёт, пока жив клиент.
                 match incoming {
                     Some(Ok(_)) => {}
                     _ => break,

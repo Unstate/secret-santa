@@ -62,7 +62,7 @@ pub struct CreateRoomRequest {
 pub struct PlayerWithToken {
     #[serde(flatten)]
     player: db::players::Player,
-    /// Показывается один раз; клиент хранит его в IndexedDB.
+    /// Показывается один раз; клиент хранит его в localStorage.
     token: String,
 }
 
@@ -112,6 +112,8 @@ pub struct RoomDetails {
     #[serde(flatten)]
     room: db::rooms::Room,
     players: Vec<db::players::Player>,
+    /// Тот, кто спросил: по нему фронт отличает организатора от гостя.
+    me: db::players::Player,
 }
 
 pub async fn get_room(
@@ -126,7 +128,11 @@ pub async fn get_room(
         return Err(ApiError::Forbidden);
     }
     let players = db::players::list_by_room(&state.db, room.id).await?;
-    Ok(Json(RoomDetails { room, players }))
+    Ok(Json(RoomDetails {
+        room,
+        players,
+        me: player,
+    }))
 }
 
 #[derive(Debug, Deserialize)]

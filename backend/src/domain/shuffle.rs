@@ -1,10 +1,3 @@
-//! Чистая логика шафла: без БД и HTTP — только математика.
-//!
-//! Инварианты результата:
-//! 1. это биекция (каждый игрок — получатель ровно один раз);
-//! 2. никто не дарит сам себе;
-//! 3. соблюдаются исключения: пары `(giver, recipient)` не входят в `blocked`.
-
 use std::collections::BTreeSet;
 
 use rand::{Rng, seq::SliceRandom};
@@ -13,9 +6,7 @@ use super::validate;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ShuffleError {
-    /// Шафл невозможен; список — человеческие причины для UI организатора.
     Impossible(Vec<String>),
-    /// Неожиданный сбой генерации; после проверки разрешимости возникать не должен.
     GenerationFailed,
 }
 
@@ -32,9 +23,6 @@ impl std::fmt::Display for ShuffleError {
 
 impl std::error::Error for ShuffleError {}
 
-/// Строит дарение: `assignment[giver] = recipient` (индексы в `names`).
-/// `names` нужны только для человекочитаемых причин невозможности.
-/// Продуктовое правило: минимум 3 игрока.
 pub fn shuffle(
     names: &[&str],
     blocked: &BTreeSet<(usize, usize)>,
@@ -53,8 +41,6 @@ pub fn shuffle(
         )));
     }
 
-    // Существование уже доказано matching'ом, поэтому randomized backtracking
-    // с бюджетом узлов и свежим случайным порядком попыток сходится.
     for _ in 0..32 {
         if let Some(assignment) = randomized_backtracking(n, blocked, rng) {
             debug_assert!(validate::validate_assignment(n, blocked, &assignment));
@@ -62,14 +48,9 @@ pub fn shuffle(
         }
     }
 
-    // Подстраховка: детерминированный matching — валидный, но менее случайный;
-    // ветка практически недостижима.
     validate::find_matching(n, blocked).ok_or(ShuffleError::GenerationFailed)
 }
 
-/// Один прогон randomized backtracking: дарители в случайном порядке, каждому —
-/// случайный свободный допустимый получатель; тупик — откат по дереву.
-/// Бюджет раскрытых узлов защищает от патологического случая.
 fn randomized_backtracking(
     n: usize,
     blocked: &BTreeSet<(usize, usize)>,
@@ -185,7 +166,6 @@ mod tests {
 
     #[test]
     fn mutual_block_of_two_of_three_is_impossible() {
-        // Аня и Боря могут дарить только Вере — пар на всех не хватает.
         let blocked: BTreeSet<(usize, usize)> = BTreeSet::from([(0, 1), (1, 0)]);
         let mut r = rng(2);
         assert!(matches!(
@@ -207,8 +187,6 @@ mod tests {
 
     #[test]
     fn forced_exclusions_give_the_only_answer() {
-        // Цикл Аня≠Боря, Боря≠Вера, Вера≠Аня: единственное решение
-        // Аня→Вера, Боря→Аня, Вера→Боря.
         let blocked: BTreeSet<(usize, usize)> = BTreeSet::from([(0, 1), (1, 2), (2, 0)]);
         let mut r = rng(3);
         assert_eq!(
@@ -229,7 +207,6 @@ mod tests {
                     blocked.insert((giver, recipient));
                 }
             }
-            // Неразрешимые конфигурации — валидный исход, пропускаем.
             let owned = make_names(n);
             let names = str_names(&owned);
             let Ok(assignment) = shuffle(&names, &blocked, &mut r) else {

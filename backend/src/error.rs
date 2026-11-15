@@ -1,6 +1,3 @@
-//! Единый формат ошибок API: HTTP-статус + `{"code", "message"}`.
-//! Клиент разбирает `code`, человек читает `message`.
-
 use axum::{
     Json,
     http::StatusCode,
@@ -72,7 +69,6 @@ impl IntoResponse for ApiError {
 
         let message = match &self {
             ShuffleImpossible(reasons) => reasons.join("; "),
-            // детали ошибок БД/паник наружу не отдаём
             Database(_) | Internal(_) => "внутренняя ошибка".to_string(),
             other => other.to_string(),
         };

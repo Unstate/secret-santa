@@ -3,7 +3,6 @@ use uuid::Uuid;
 
 use super::players::Player;
 
-/// Полная замена пар комнаты (внутри транзакции хендлера).
 pub async fn replace_all(
     conn: &mut sqlx::PgConnection,
     room_id: Uuid,
@@ -27,8 +26,6 @@ pub async fn replace_all(
     Ok(())
 }
 
-/// Видел ли хоть кто-то свой результат (или организатор — полный порядок):
-/// тогда ресафл запрещён (docs/BACKEND.md §7).
 pub async fn any_viewed(db: impl PgExecutor<'_>, room_id: Uuid) -> sqlx::Result<bool> {
     sqlx::query_scalar::<_, bool>(
         "select exists(
@@ -53,7 +50,6 @@ pub async fn mark_viewed(db: impl PgExecutor<'_>, giver_id: Uuid) -> sqlx::Resul
     Ok(())
 }
 
-/// Просмотр организатором полного порядка — тоже «увиденный» результат.
 pub async fn mark_all_viewed(db: impl PgExecutor<'_>, room_id: Uuid) -> sqlx::Result<()> {
     sqlx::query(
         "update assignments a set viewed_at = now()
@@ -66,7 +62,6 @@ pub async fn mark_all_viewed(db: impl PgExecutor<'_>, room_id: Uuid) -> sqlx::Re
     Ok(())
 }
 
-/// Получатель игрока: `None` — шафл ещё не проводился.
 pub async fn find_recipient_of(
     db: impl PgExecutor<'_>,
     giver_id: Uuid,
@@ -82,7 +77,6 @@ pub async fn find_recipient_of(
     .await
 }
 
-/// Полный порядок комнаты: `(giver_id, recipient_id)`.
 pub async fn list_pairs(db: impl PgExecutor<'_>, room_id: Uuid) -> sqlx::Result<Vec<(Uuid, Uuid)>> {
     sqlx::query_as::<_, (Uuid, Uuid)>(
         "select a.giver_id, a.recipient_id

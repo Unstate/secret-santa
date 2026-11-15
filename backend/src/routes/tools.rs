@@ -1,5 +1,3 @@
-//! Утилиты: превью товара вишлиста по маркетплейсу + коду.
-
 use axum::{Json, extract::State};
 use serde::{Deserialize, Serialize};
 
@@ -14,7 +12,6 @@ use crate::{
 #[serde(rename_all = "camelCase")]
 pub struct ParseProductRequest {
     source: Source,
-    /// Код товара (артикул).
     code: String,
 }
 
@@ -23,14 +20,11 @@ pub struct ParseProductRequest {
 pub struct ParseProductResponse {
     source: Source,
     code: String,
-    /// Строится детерминированно — доступна даже без метаданных.
     link: Option<String>,
     title: Option<String>,
     image_url: Option<String>,
-    /// Копейки.
     price: Option<i64>,
     in_stock: Option<bool>,
-    /// `false` → фронт показывает форму ручного ввода.
     parsed: bool,
 }
 
@@ -47,7 +41,6 @@ pub async fn parse_product(
     let link = req.source.product_link(&code);
     let (info, parsed) = match state.parsers.parse(req.source, &code).await {
         Ok(info) => (info, true),
-        // Незапарсившийся товар не ошибка запроса: отдаём ссылку и пустые поля.
         Err(_) => (
             ProductInfo {
                 source: req.source,

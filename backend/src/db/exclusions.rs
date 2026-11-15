@@ -1,7 +1,6 @@
 use sqlx::PgExecutor;
 use uuid::Uuid;
 
-/// Полная замена исключений комнаты (внутри транзакции хендлера).
 pub async fn replace_all(
     conn: &mut sqlx::PgConnection,
     room_id: Uuid,
@@ -24,7 +23,6 @@ pub async fn replace_all(
     Ok(())
 }
 
-/// Все исключения комнаты: `(player_id, blocked_recipient_id)`.
 pub async fn list_by_room(
     db: impl PgExecutor<'_>,
     room_id: Uuid,

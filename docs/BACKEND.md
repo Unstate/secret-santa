@@ -140,12 +140,15 @@ WS-событиям пары недоступны никогда; эндпоин
 
 Аутентификация: `Authorization: Bearer <player_token>`.
 Токен — 32 случайных байта в hex, в БД только sha256. Создаётся при join,
-хранится у клиента в IndexedDB. Потеря токена = потеря места в комнате.
+хранится у клиента в localStorage (`santa-sessions`: код комнаты → токен,
+места в нескольких комнатах). Потеря токена = потеря места в комнате;
+вход с другого устройства не предусмотрен (обсуждали: ссылка-вход / PIN —
+отложено).
 
 | Метод | Путь | Кто | Что |
 |---|---|---|---|
 | POST | `/rooms` | любой | создать комнату `{name, budget}` → `{room, player, token}` (создатель = организатор) |
-| GET | `/rooms/{code}` | участник | `{name, budget, status, players[]}` |
+| GET | `/rooms/{code}` | участник | `{name, budget, status, players[], me}` |
 | POST | `/rooms/{code}/join` | любой | `{name, avatar}` → `{player, token}` |
 | PATCH | `/rooms/{code}` | организатор | имя, бюджет |
 | PUT | `/rooms/{code}/exclusions` | организатор | полная замена списка `[{{playerId, blockedRecipientId}}]` + серверная проверка разрешимости |

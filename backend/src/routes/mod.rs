@@ -1,5 +1,3 @@
-//! Роуты API по фичам. Каждый файл — самостоятельная фича со своими DTO.
-
 pub mod exclusions;
 pub mod rooms;
 pub mod shuffle;

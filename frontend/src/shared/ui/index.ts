@@ -22,11 +22,14 @@ export type { ToastApi, ToastTone } from './toast/context'
 export { Avatar, AvatarPicker } from './avatar/Avatar'
 export type { AvatarProps, AvatarPickerProps } from './avatar/Avatar'
 export {
+  ArrowLeftIcon,
   ArrowRightIcon,
+  CopyIcon,
   GiftIcon,
   HashIcon,
   MoonIcon,
   PlusIcon,
+  ShuffleIcon,
   SnowflakeIcon,
   SunIcon,
 } from './icons/icons'

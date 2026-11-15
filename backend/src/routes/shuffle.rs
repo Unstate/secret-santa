@@ -1,8 +1,3 @@
-//! Шафл и просмотр результатов.
-//!
-//! Инвариант: полный порядок пар отдаётся только организатору (кнопка-проверка),
-//! игрок видит только своего получателя. Пары никогда не уходят по WS.
-
 use std::collections::{BTreeSet, HashMap};
 
 use axum::{
@@ -32,8 +27,6 @@ pub async fn shuffle(
     if organizer.room_id != room.id {
         return Err(ApiError::Forbidden);
     }
-    // В лобби шафл всегда доступен; в статусе shuffled — только как ресафл,
-    // пока результат никто не открывал (docs/BACKEND.md §7).
     let any_viewed = db::assignments::any_viewed(&state.db, room.id).await?;
     match room.status.as_str() {
         "lobby" => {}
@@ -59,8 +52,6 @@ pub async fn shuffle(
         .collect();
     let names: Vec<&str> = players.iter().map(|player| player.name.as_str()).collect();
 
-    // Блок ограничивает время жизни ThreadRng (!Send): хендлер не должен
-    // держать его через await-точки.
     let assignment = {
         let mut rng = rand::rng();
         domain::shuffle::shuffle(&names, &blocked, &mut rng).map_err(ApiError::from)?
@@ -108,8 +99,6 @@ pub struct MyAssignmentResponse {
     wishlist: Vec<db::wishlist::WishlistItem>,
 }
 
-/// «Кому я дарю»: свой получатель с его вишлистом. Повторный вызов
-/// безопасен — вернёт того же.
 pub async fn my_assignment(
     State(state): State<AppState>,
     Path(code): Path<String>,
@@ -141,7 +130,6 @@ pub struct AssignmentPair {
     recipient: RecipientDto,
 }
 
-/// Полный порядок пар — organizer-only, кнопка-проверка шафла (§4, §11).
 pub async fn all_assignments(
     State(state): State<AppState>,
     Path(code): Path<String>,
@@ -175,8 +163,6 @@ pub async fn all_assignments(
         });
     }
 
-    // Просмотр организатором тоже считается «увиденным» — ресафл после него
-    // заблокирован (docs/BACKEND.md §7).
     db::assignments::mark_all_viewed(&state.db, room.id).await?;
     Ok(Json(result))
 }
