@@ -1,6 +1,12 @@
 import { useEffect } from 'react'
 import { Link, useParams } from 'react-router'
-import { PlayerProfileCard, RoomJoinCard, RoomSettingsCard, RoomShuffleCard } from '@/features'
+import {
+  AssignmentsOrderCard,
+  PlayerProfileCard,
+  RoomJoinCard,
+  RoomSettingsCard,
+  RoomShuffleCard,
+} from '@/features'
 import { useGet } from '@/shared/hooks'
 import type { RoomDetails } from '@/shared/api'
 import { formatMoney, normalizeRoomCode } from '@/shared/lib'
@@ -133,6 +139,9 @@ export function RoomPage() {
               shuffled={details.status === 'shuffled'}
               onDone={get}
             />
+          )}
+          {details.me.isOrganizer && details.status === 'shuffled' && (
+            <AssignmentsOrderCard code={details.code} />
           )}
           {!details.me.isOrganizer && details.status === 'shuffled' && (
             <Card className={styles.notice}>

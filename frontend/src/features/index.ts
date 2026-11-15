@@ -1,3 +1,4 @@
+export { AssignmentsOrderCard } from './assignments-order/AssignmentsOrderCard'
 export { CreateRoomForm } from './create-room/CreateRoomForm'
 export { JoinRoomForm } from './join-room/JoinRoomForm'
 export { PlayerProfileCard } from './player-profile/PlayerProfileCard'
