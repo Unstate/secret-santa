@@ -15,6 +15,7 @@
 - `docs/` — дизайн-документы: [BACKEND.md](docs/BACKEND.md) (архитектура API),
   [FRONTEND.md](docs/FRONTEND.md) (архитектура фронта),
   [LOCAL_SETUP.md](docs/LOCAL_SETUP.md) (подъём бекенда для фронта),
+  [RELEASING.md](docs/RELEASING.md) (выпуск версий),
   [TODO.md](docs/TODO.md) (что осталось), [BUGS.md](docs/BUGS.md) (грабли)
 - `docker-compose.yml` — дев-Postgres; `docker-compose.prod.yml` — прод
   (frontend-Caddy с авто-HTTPS + backend + Postgres, без автозапуска при перезагрузке)

@@ -5,6 +5,24 @@
 
 ## Фронтенд / сборка
 
+### /tools/parse-product ловит 401 — getToken не видит токен (15.11)
+- **Симптом:** превью товара из формы вишлиста → `unauthorized`, хотя место
+  в комнате есть.
+- **Причина:** токен вешается по пути запроса (код достаётся из
+  `/rooms/{code}/…`), а в `/tools/parse-product` кода комнаты в пути нет.
+- **Решение:** у `ApiClient.post/patch/put` появился параметр `headers` —
+  вызов с пути без кода комнаты вешает `authorization` сам
+  (`features/wishlist/AddWishlistItemForm.tsx`).
+
+### oxlint на WS-хуке: set-state-in-effect / exhaustive-deps (15.11)
+- **Симптом:** `setStatus('closed')` в эффекте и «missing dependency 'active'»
+  в `useRoomEvents`.
+- **Причина:** синхронный setState в эффекте каскадит рендеры; `active`
+  выведен из deps, но линтер этого не знает.
+- **Решение:** статус «закрыто» выводить при рендере
+  (`active ? socketStatus : 'closed'`), а `active` добавить в deps
+  корректности ради — значение меняется только вместе с roomCode/token.
+
 ### ci.yml падает за 0 секунд: «Unrecognized named-value: 'hashFiles'» (15.11)
 - **Симптом:** run по `.github/workflows/ci.yml` завершается за 0s, чек-ранов
   нет, баннер «This run likely failed because of a workflow file issue».
