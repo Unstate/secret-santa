@@ -151,6 +151,7 @@ WS-событиям пары недоступны никогда; эндпоин
 | GET | `/rooms/{code}` | участник | `{name, budget, status, players[], me}` |
 | POST | `/rooms/{code}/join` | любой | `{name, avatar}` → `{player, token}` |
 | PATCH | `/rooms/{code}` | организатор | имя, бюджет |
+| GET | `/rooms/{code}/exclusions` | организатор | текущие пары — восстановление UI после перезагрузки |
 | PUT | `/rooms/{code}/exclusions` | организатор | полная замена списка `[{{playerId, blockedRecipientId}}]` + серверная проверка разрешимости |
 | POST | `/rooms/{code}/shuffle` | организатор | запуск шафла (см. §7) |
 | GET | `/rooms/{code}/assignments` | организатор | полный порядок пар — кнопка-проверка шафла (§4) |

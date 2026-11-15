@@ -32,4 +32,5 @@ export {
   ShuffleIcon,
   SnowflakeIcon,
   SunIcon,
+  XIcon,
 } from './icons/icons'

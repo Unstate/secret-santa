@@ -183,6 +183,30 @@ async fn full_room_lifecycle() {
     assert_eq!(status, StatusCode::OK, "{saved}");
     assert_eq!(saved.as_array().unwrap().len(), 1);
 
+    // Текущие пары читает организатор, игроку — forbidden.
+    let (status, list) = call(
+        &app,
+        "GET",
+        &format!("/api/v1/rooms/{code}/exclusions"),
+        Some(&organizer),
+        None,
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(
+        list,
+        json!([{"playerId": anya_id, "blockedRecipientId": borya_id}])
+    );
+    let (status, _) = call(
+        &app,
+        "GET",
+        &format!("/api/v1/rooms/{code}/exclusions"),
+        Some(&anya),
+        None,
+    )
+    .await;
+    assert_eq!(status, StatusCode::FORBIDDEN);
+
     // Игрок шафлить не может.
     let (status, _) = call(
         &app,

@@ -1,6 +1,12 @@
 import { useCallback, useEffect } from 'react'
 import { Link, useParams } from 'react-router'
-import { PlayerProfileCard, RoomJoinCard, RoomSettingsCard, RoomShuffleCard } from '@/features'
+import {
+  PlayerProfileCard,
+  RoomExclusionsCard,
+  RoomJoinCard,
+  RoomSettingsCard,
+  RoomShuffleCard,
+} from '@/features'
 import { useGet, useRoomEvents } from '@/shared/hooks'
 import { readSessionToken } from '@/shared/api'
 import type { RoomDetails } from '@/shared/api'
@@ -143,6 +149,9 @@ export function RoomPage() {
             </ul>
           </Card>
           {details.me.isOrganizer && <RoomSettingsCard room={details} onSaved={get} />}
+          {details.me.isOrganizer && details.status === 'lobby' && (
+            <RoomExclusionsCard code={details.code} players={details.players} onSaved={refresh} />
+          )}
           {details.me.isOrganizer && (
             <RoomShuffleCard
               code={details.code}
