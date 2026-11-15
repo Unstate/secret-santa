@@ -28,6 +28,7 @@ export {
   GiftIcon,
   HashIcon,
   MoonIcon,
+  PencilIcon,
   PlusIcon,
   ShuffleIcon,
   SnowflakeIcon,

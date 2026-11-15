@@ -8,6 +8,7 @@ import {
   RoomJoinCard,
   RoomSettingsCard,
   RoomShuffleCard,
+  WishlistCard,
 } from '@/features'
 import { useGet, useRoomEvents } from '@/shared/hooks'
 import { readSessionToken } from '@/shared/api'
@@ -150,6 +151,7 @@ export function RoomPage() {
               ))}
             </ul>
           </Card>
+          <WishlistCard roomCode={details.code} meId={details.me.id} />
           {details.me.isOrganizer && <RoomSettingsCard room={details} onSaved={get} />}
           {details.me.isOrganizer && details.status === 'lobby' && (
             <RoomExclusionsCard code={details.code} players={details.players} onSaved={refresh} />
