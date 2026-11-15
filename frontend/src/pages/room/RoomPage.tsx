@@ -1,6 +1,7 @@
 import { useCallback, useEffect } from 'react'
 import { Link, useParams } from 'react-router'
 import {
+  MyAssignmentCard,
   PlayerProfileCard,
   RoomExclusionsCard,
   RoomJoinCard,
@@ -159,14 +160,7 @@ export function RoomPage() {
               onDone={get}
             />
           )}
-          {!details.me.isOrganizer && details.status === 'shuffled' && (
-            <Card className={styles.notice}>
-              <h2 className={styles.cardTitle}>Шафл проведён</h2>
-              <p className={styles.cardText}>
-                Организатор раздал пары. Экран «кому я дарю» появится здесь на следующем шаге.
-              </p>
-            </Card>
-          )}
+          {details.status === 'shuffled' && <MyAssignmentCard code={details.code} />}
         </div>
       </main>
     </div>
