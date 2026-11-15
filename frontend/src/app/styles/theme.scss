@@ -1,0 +1,115 @@
+// Дизайн-токены двух тем. Подключается один раз в main.tsx (после reset).
+// Компоненты используют только эти переменные — никаких хардкод-цветов.
+
+:root {
+  // Поверхности
+  --bg: #e9eff7;
+  --bg-glow: #f6f9fd;
+  --surface: #ffffff;
+  --surface-soft: #f2f6fb;
+  --surface-raised: #ffffff;
+  --overlay: rgba(32, 48, 74, 0.45);
+
+  // Текст
+  --text: #2b3552;
+  --text-soft: #67728f;
+  --text-faint: #93a0bd;
+
+  // Границы
+  --border: #dde6f2;
+  --border-strong: #c9d6e8;
+
+  // Акценты: морозный синий, ягодно-красный, елово-зелёный, золото
+  --primary: #4f7fd1;
+  --primary-strong: #3d6bc0;
+  --primary-soft: #e4edfb;
+  --primary-contrast: #ffffff;
+  --accent: #d95d67;
+  --accent-strong: #c74c56;
+  --accent-soft: #fbe8ea;
+  --green: #43a07c;
+  --green-strong: #358a68;
+  --green-soft: #e1f3ea;
+  --gold: #e9b94e;
+  --danger: #d5545e;
+  --danger-strong: #c24450;
+  --danger-soft: #fbe8ea;
+
+  // Мягкость: крупные радиусы, деликатные тени
+  --radius-s: 10px;
+  --radius-m: 16px;
+  --radius-l: 24px;
+  --radius-pill: 999px;
+  --shadow-soft: 0 2px 6px rgba(56, 84, 130, 0.06), 0 12px 32px rgba(56, 84, 130, 0.1);
+  --shadow-pop: 0 4px 10px rgba(56, 84, 130, 0.1), 0 20px 48px rgba(56, 84, 130, 0.16);
+  --focus-ring: 0 0 0 3px rgba(79, 127, 209, 0.35);
+
+  // Снег: на снежно-белом фоне flakes должны быть видны — голубоватые
+  --snow: rgba(108, 138, 190, 0.5);
+  --snow-drift: #ffffff;
+
+  // Шрифты (подключены в index.html)
+  --font-ui: 'Nunito', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Comfortaa', 'Nunito', system-ui, sans-serif;
+
+  color-scheme: light;
+}
+
+[data-theme='dark'] {
+  // Ночь перед Рождеством: глубокое синее небо
+  --bg: #0f1724;
+  --bg-glow: #131c2d;
+  --surface: #1a2537;
+  --surface-soft: #151f30;
+  --surface-raised: #202d43;
+  --overlay: rgba(6, 12, 22, 0.6);
+
+  --text: #e8edf6;
+  --text-soft: #9daac5;
+  --text-faint: #6e7c9a;
+
+  --border: #293852;
+  --border-strong: #3a4c6e;
+
+  --primary: #7aa5e8;
+  --primary-strong: #93b8ef;
+  --primary-soft: #24344f;
+  --primary-contrast: #0f1724;
+  --accent: #e07781;
+  --accent-strong: #ea8d96;
+  --accent-soft: #3a2a34;
+  --green: #5cb594;
+  --green-strong: #74c6a7;
+  --green-soft: #1f3a31;
+  --gold: #eec866;
+  --danger: #e07781;
+  --danger-strong: #ea8d96;
+  --danger-soft: #3a2a34;
+
+  --shadow-soft: 0 2px 6px rgba(3, 8, 16, 0.35), 0 12px 32px rgba(3, 8, 16, 0.45);
+  --shadow-pop: 0 4px 10px rgba(3, 8, 16, 0.4), 0 20px 48px rgba(3, 8, 16, 0.55);
+  --focus-ring: 0 0 0 3px rgba(122, 165, 232, 0.4);
+
+  --snow: rgba(210, 226, 250, 0.5);
+  --snow-drift: #1c2a44;
+
+  color-scheme: dark;
+}
+
+// Базовая типографика: reset сбрасывает всё в inherit, поэтому тело
+// задаёт шрифт/цвет всей странице.
+body {
+  font-family: var(--font-ui);
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--text);
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

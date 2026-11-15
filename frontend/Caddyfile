@@ -1,24 +1,12 @@
-# Домен берётся из переменной окружения DOMAIN (см. docker-compose.prod.yml).
-#
-# DOMAIN=localhost (по умолчанию) — просто HTTP на :80, удобно проверить локально.
-# DOMAIN=ваш-домен — Caddy при старте сам выпустит сертификат Let's Encrypt,
-# включит HTTPS на :443, будет редиректить HTTP → HTTPS и продлевать
-# сертификат. Руками ничего делать не нужно: ни certbot, ни cron.
-#
-# Условие: A-запись домена указывает на IP сервера, порты 80/443 открыты.
 {$DOMAIN:localhost} {
 	root * /srv
 	encode gzip zstd
 
-	# REST и WebSocket комнаты уходят на бекенд. Same-origin сохраняется,
-	# поэтому release-бекенду CORS по-прежнему не нужен. WebSocket-апгрейд
-	# reverse_proxy проксирует автоматически.
 	@backend path /api/* /healthz
 	handle @backend {
 		reverse_proxy backend:8080
 	}
 
-	# SPA: всё остальное — статика, неизвестные пути отдают index.html
 	handle {
 		try_files {path} /index.html
 		file_server

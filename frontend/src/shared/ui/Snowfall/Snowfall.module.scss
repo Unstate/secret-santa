@@ -1,0 +1,39 @@
+.snowfall {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.fall {
+  position: absolute;
+  top: -6vh;
+  animation-name: fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.sway {
+  display: inline-block;
+  color: var(--snow);
+  animation-name: sway;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+
+@keyframes fall {
+  to {
+    transform: translateY(114vh);
+  }
+}
+
+@keyframes sway {
+  from {
+    transform: translateX(calc(var(--drift) * -1));
+  }
+  to {
+    transform: translateX(var(--drift));
+  }
+}

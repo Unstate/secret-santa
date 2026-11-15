@@ -1,31 +1,5 @@
-import { BrowserRouter, Route, Routes, useParams } from 'react-router'
-
-function HomePage() {
-  return (
-    <main>
-      <h1>Тайный Санта</h1>
-      <p>Создать комнату или войти по коду — здесь.</p>
-    </main>
-  )
-}
-
-function RoomPage() {
-  const { code } = useParams<{ code: string }>()
-  return (
-    <main>
-      <h1>Комната {code}</h1>
-    </main>
-  )
-}
-
-function NotFoundPage() {
-  return (
-    <main>
-      <h1>404</h1>
-      <p>Такой страницы нет — проверьте код комнаты.</p>
-    </main>
-  )
-}
+import { BrowserRouter, Route, Routes } from 'react-router'
+import { DevShowcase, HomePage, NotFoundPage, RoomPage } from '@/pages'
 
 export function AppRouter() {
   return (
@@ -33,6 +7,7 @@ export function AppRouter() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/room/:code" element={<RoomPage />} />
+        {import.meta.env.DEV && <Route path="/dev/ui" element={<DevShowcase />} />}
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>

@@ -1,0 +1,93 @@
+.list {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: min(380px, calc(100vw - 40px));
+}
+
+.toast {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px 16px;
+  overflow: hidden;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-m);
+  box-shadow: var(--shadow-pop);
+  animation: toast-in 0.25s ease;
+}
+
+.message {
+  flex: 1;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--text);
+}
+
+.close {
+  padding: 0 2px;
+  border: none;
+  background: none;
+  color: var(--text-faint);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: var(--text);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+    border-radius: var(--radius-s);
+  }
+}
+
+.bar {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 3px;
+  transform-origin: left;
+  animation-name: toast-shrink;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+.error {
+  border-left: 3px solid var(--danger);
+
+  .bar {
+    background: var(--danger);
+  }
+}
+
+.success {
+  border-left: 3px solid var(--green);
+
+  .bar {
+    background: var(--green);
+  }
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+}
+
+@keyframes toast-shrink {
+  to {
+    transform: scaleX(0);
+  }
+}

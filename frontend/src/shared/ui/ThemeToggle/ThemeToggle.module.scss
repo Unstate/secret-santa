@@ -1,0 +1,24 @@
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--text-soft);
+  cursor: pointer;
+  box-shadow: var(--shadow-soft);
+  transition: color 0.15s ease, transform 0.15s ease;
+
+  &:hover {
+    color: var(--primary);
+    transform: rotate(12deg);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+  }
+}

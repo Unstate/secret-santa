@@ -1,0 +1,35 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.primary {
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+.accent {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.green {
+  background: var(--green-soft);
+  color: var(--green);
+}
+
+.gold {
+  background: rgba(233, 185, 78, 0.18);
+  color: var(--gold);
+}
+
+.neutral {
+  background: var(--surface-soft);
+  color: var(--text-soft);
+}

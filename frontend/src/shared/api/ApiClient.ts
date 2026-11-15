@@ -18,7 +18,7 @@ export interface ApiClientDeps {
   fetch?: typeof fetch
 }
 
-type Json = Record<string, unknown> | unknown[]
+type Json = unknown
 
 export class ApiClient {
   private readonly baseUrl: string
@@ -73,7 +73,7 @@ export class ApiClient {
   }
 }
 
-function serialize(body: Json | undefined): string | undefined {
+function serialize(body: unknown): string | undefined {
   return body === undefined ? undefined : JSON.stringify(body)
 }
 

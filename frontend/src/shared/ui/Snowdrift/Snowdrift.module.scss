@@ -1,0 +1,37 @@
+.drifts {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 96px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.drifts span {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--snow-drift);
+}
+
+.moundLeft {
+  width: 62vw;
+  height: 110px;
+  left: -14vw;
+  bottom: -58px;
+}
+
+.moundCenter {
+  width: 56vw;
+  height: 96px;
+  left: 26vw;
+  bottom: -52px;
+  opacity: 0.85;
+}
+
+.moundRight {
+  width: 52vw;
+  height: 104px;
+  right: -16vw;
+  bottom: -56px;
+}

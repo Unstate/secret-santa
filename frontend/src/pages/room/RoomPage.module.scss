@@ -1,0 +1,18 @@
+.page {
+  min-height: 100dvh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 96px 24px;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: 24px;
+  color: var(--text);
+}
+
+.text {
+  margin-top: 8px;
+  color: var(--text-soft);
+}

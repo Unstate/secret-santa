@@ -11,8 +11,9 @@
 ## Структура репозитория
 
 - `backend/`, `frontend/` — код приложения (в каждой папке свой многостадийный
-  `Dockerfile`)
+  `Dockerfile`); архитектура фронта — [docs/FRONTEND.md](docs/FRONTEND.md)
 - `docs/` — дизайн-документы: [BACKEND.md](docs/BACKEND.md) (архитектура API),
+  [FRONTEND.md](docs/FRONTEND.md) (архитектура фронта),
   [LOCAL_SETUP.md](docs/LOCAL_SETUP.md) (подъём бекенда для фронта),
   [TODO.md](docs/TODO.md) (что осталось), [BUGS.md](docs/BUGS.md) (грабли)
 - `docker-compose.yml` — дев-Postgres; `docker-compose.prod.yml` — прод
