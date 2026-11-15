@@ -1,5 +1,8 @@
 export { ApiClient, ApiError } from './ApiClient'
 export type { ApiClientDeps } from './ApiClient'
 export { api } from './api'
+export { API_BASE_URL } from './base'
 export { readSessionToken, saveSessionToken } from './session'
+export { RoomSocket } from './ws'
+export type { RoomSocketStatus, RoomSocketHandlers } from './ws'
 export type * from './types'

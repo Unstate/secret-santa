@@ -16,6 +16,12 @@
   justify-content: space-between;
 }
 
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .back {
   display: inline-flex;
   align-items: center;

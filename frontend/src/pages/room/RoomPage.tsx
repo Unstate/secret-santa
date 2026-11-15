@@ -1,7 +1,8 @@
-import { useEffect } from 'react'
+import { useCallback, useEffect } from 'react'
 import { Link, useParams } from 'react-router'
 import { PlayerProfileCard, RoomJoinCard, RoomSettingsCard, RoomShuffleCard } from '@/features'
-import { useGet } from '@/shared/hooks'
+import { useGet, useRoomEvents } from '@/shared/hooks'
+import { readSessionToken } from '@/shared/api'
 import type { RoomDetails } from '@/shared/api'
 import { formatMoney, normalizeRoomCode } from '@/shared/lib'
 import {
@@ -24,11 +25,23 @@ export function RoomPage() {
   const { code = '' } = useParams()
   const roomCode = normalizeRoomCode(code)
   const { data: room, error, loading, get } = useGet<RoomDetails>(`/rooms/${roomCode}`)
+  const sessionToken = readSessionToken(roomCode)
   const toast = useToast()
 
   useEffect(() => {
     void get()
   }, [get])
+
+  // События WS лишь триггерят перечитывание REST — источник истины в нём.
+  const refresh = useCallback(() => {
+    void get()
+  }, [get])
+  const socketStatus = useRoomEvents({
+    roomCode,
+    token: sessionToken,
+    onEvent: refresh,
+    onReconnect: refresh,
+  })
 
   async function copyInvite() {
     try {
@@ -45,7 +58,10 @@ export function RoomPage() {
         <ArrowLeftIcon size={18} />
         На главную
       </Link>
-      <ThemeToggle />
+      <div className={styles.headerRight}>
+        {socketStatus === 'reconnecting' && <Badge tone="neutral">переподключаемся…</Badge>}
+        <ThemeToggle />
+      </div>
     </header>
   )
 
