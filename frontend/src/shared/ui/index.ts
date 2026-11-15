@@ -28,8 +28,10 @@ export {
   GiftIcon,
   HashIcon,
   MoonIcon,
+  PencilIcon,
   PlusIcon,
   ShuffleIcon,
   SnowflakeIcon,
   SunIcon,
+  XIcon,
 } from './icons/icons'

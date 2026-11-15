@@ -1,6 +1,12 @@
 import { useEffect } from 'react'
 import { Link, useParams } from 'react-router'
-import { PlayerProfileCard, RoomJoinCard, RoomSettingsCard, RoomShuffleCard } from '@/features'
+import {
+  PlayerProfileCard,
+  RoomJoinCard,
+  RoomSettingsCard,
+  RoomShuffleCard,
+  WishlistCard,
+} from '@/features'
 import { useGet } from '@/shared/hooks'
 import type { RoomDetails } from '@/shared/api'
 import { formatMoney, normalizeRoomCode } from '@/shared/lib'
@@ -126,6 +132,7 @@ export function RoomPage() {
               ))}
             </ul>
           </Card>
+          <WishlistCard roomCode={details.code} meId={details.me.id} />
           {details.me.isOrganizer && <RoomSettingsCard room={details} onSaved={get} />}
           {details.me.isOrganizer && (
             <RoomShuffleCard
