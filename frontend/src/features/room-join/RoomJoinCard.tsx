@@ -1,6 +1,6 @@
 import { ArrowRightIcon, Button, Card, HashIcon, useToast } from '@/shared/ui'
 import { usePost } from '@/shared/hooks'
-import { saveSessionToken } from '@/shared/api'
+import { apiErrorText, saveSessionToken } from '@/shared/api'
 import type { JoinRequest, JoinResponse } from '@/shared/api'
 import { loadPlayerProfile } from '@/features/player-profile/profile'
 import styles from './RoomJoinCard.module.scss'
@@ -27,7 +27,7 @@ export function RoomJoinCard({ code, onJoined }: RoomJoinCardProps) {
       toast.success(`Добро пожаловать, ${result.data.player.name}!`)
       onJoined()
     } else {
-      toast.error(result.error.message)
+      toast.error(apiErrorText(result.error))
     }
   }
 

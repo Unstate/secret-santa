@@ -4,6 +4,7 @@ import { Button, Card, Field, Input, useToast } from '@/shared/ui'
 import { usePatch } from '@/shared/hooks'
 import { ROOM_NAME_MAX, zodFieldErrors } from '@/shared/lib/validation'
 import { parseRubles, rublesToKopecks } from '@/shared/lib/money'
+import { apiErrorText } from '@/shared/api'
 import type { PatchRoomRequest, Room } from '@/shared/api'
 import styles from './RoomSettingsCard.module.scss'
 
@@ -48,7 +49,7 @@ export function RoomSettingsCard({ room, onSaved }: RoomSettingsCardProps) {
       toast.success('Настройки сохранены')
       onSaved()
     } else {
-      toast.error(result.error.message)
+      toast.error(apiErrorText(result.error))
     }
   }
 

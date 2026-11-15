@@ -71,8 +71,11 @@ pages / shared). Дизайн-основа готова (15.11).
 - [ ] Вишлист: свои items, добавление через `POST /tools/parse-product`
   (радиобатон WB/Ozon + код товара; `parsed: false` → форма ручного ввода),
   правка/удаление своих.
-- [ ] Обработка ошибок API по `ApiError.code` (`room_not_found`, `name_taken`, …)
-  — класс уже возвращает code/status.
+- [x] ~~Обработка ошибок API по `ApiError.code`~~ (15.11): `shared/api/errorText.ts`
+  — `apiErrorText(error)`: для `shuffle_impossible`/`validation_failed` берём
+  message бекенда (там живые детали), для остальных кодов — стабильный
+  человеческий текст (не зависим от формулировок бекенда); неизвестный код и
+  сеть — как раньше, message. Тосты всех форм и карточек переведены на него.
 
 ## Продуктовые вопросы (BACKEND.md §11)
 

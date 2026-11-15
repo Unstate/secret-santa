@@ -1,5 +1,6 @@
 export { ApiClient, ApiError } from './ApiClient'
 export type { ApiClientDeps } from './ApiClient'
 export { api } from './api'
+export { apiErrorText } from './errorText'
 export { readSessionToken, saveSessionToken } from './session'
 export type * from './types'

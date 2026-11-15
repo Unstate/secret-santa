@@ -1,5 +1,6 @@
 import { Button, Card, ShuffleIcon, useToast } from '@/shared/ui'
 import { usePost } from '@/shared/hooks'
+import { apiErrorText } from '@/shared/api'
 import styles from './RoomShuffleCard.module.scss'
 
 interface RoomShuffleCardProps {
@@ -18,7 +19,7 @@ export function RoomShuffleCard({ code, shuffled, onDone }: RoomShuffleCardProps
       toast.success(shuffled ? 'Пары пересобраны' : 'Пары собраны')
       onDone()
     } else {
-      toast.error(result.error.message)
+      toast.error(apiErrorText(result.error))
     }
   }
 
