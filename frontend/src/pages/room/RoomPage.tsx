@@ -1,6 +1,7 @@
 import { useCallback, useEffect } from 'react'
 import { Link, useParams } from 'react-router'
 import {
+  AssignmentsOrderCard,
   MyAssignmentCard,
   PlayerProfileCard,
   RoomExclusionsCard,
@@ -161,6 +162,9 @@ export function RoomPage() {
             />
           )}
           {details.status === 'shuffled' && <MyAssignmentCard code={details.code} />}
+          {details.me.isOrganizer && details.status === 'shuffled' && (
+            <AssignmentsOrderCard code={details.code} />
+          )}
         </div>
       </main>
     </div>
