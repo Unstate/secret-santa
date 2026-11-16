@@ -13,7 +13,7 @@ use futures_util::StreamExt;
 use serde_json::{Value, json};
 use tower::ServiceExt;
 
-use backend::{build_router, parser::ParserRegistry, state::AppState, ws::EventHub};
+use backend::{build_router, state::AppState, ws::EventHub};
 
 type TestApp = axum::Router;
 
@@ -35,7 +35,6 @@ async fn setup() -> Option<TestApp> {
     Some(build_router(AppState {
         db: pool,
         events: EventHub::default(),
-        parsers: ParserRegistry::new(),
     }))
 }
 
@@ -256,8 +255,8 @@ async fn full_room_lifecycle() {
     recipients.dedup();
     assert_eq!(recipients.len(), 3, "каждый выпадает ровно один раз");
 
-    // Ресафл после открытия запрещён.
-    let (status, error) = call(
+    // Ресафл доступен даже после того, как кто-то открыл свой результат.
+    let (status, _) = call(
         &app,
         "POST",
         &format!("/api/v1/rooms/{code}/shuffle"),
@@ -265,8 +264,7 @@ async fn full_room_lifecycle() {
         None,
     )
     .await;
-    assert_eq!(status, StatusCode::CONFLICT);
-    assert_eq!(error["code"], json!("reshuffle_blocked"));
+    assert_eq!(status, StatusCode::NO_CONTENT);
 
     // Полный порядок — только организатор.
     let (status, pairs) = call(
@@ -288,6 +286,82 @@ async fn full_room_lifecycle() {
     )
     .await;
     assert_eq!(status, StatusCode::FORBIDDEN);
+
+    // Сброс шафла: пары удаляются, комната возвращается в лобби, вход снова
+    // открыт; результат сбрасывается у уже открывших.
+    let (status, _) = call(
+        &app,
+        "POST",
+        &format!("/api/v1/rooms/{code}/reset"),
+        Some(&anya),
+        None,
+    )
+    .await;
+    assert_eq!(status, StatusCode::FORBIDDEN);
+    let (status, _) = call(
+        &app,
+        "POST",
+        &format!("/api/v1/rooms/{code}/reset"),
+        Some(&organizer),
+        None,
+    )
+    .await;
+    assert_eq!(status, StatusCode::NO_CONTENT);
+
+    let (status, room) = call(&app, "GET", &format!("/api/v1/rooms/{code}"), Some(&organizer), None).await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(room["status"], json!("lobby"));
+
+    let (status, error) = call(
+        &app,
+        "GET",
+        &format!("/api/v1/rooms/{code}/me/assignment"),
+        Some(&anya),
+        None,
+    )
+    .await;
+    assert_eq!(status, StatusCode::CONFLICT);
+    assert_eq!(error["code"], json!("shuffle_not_ready"));
+
+    // После сброса можно войти новым и зашафлить заново.
+    let (status, _) = call(
+        &app,
+        "POST",
+        &format!("/api/v1/rooms/{code}/join"),
+        None,
+        Some(json!({"name": "Вера", "avatar": 15})),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    let (status, _) = call(
+        &app,
+        "POST",
+        &format!("/api/v1/rooms/{code}/shuffle"),
+        Some(&organizer),
+        None,
+    )
+    .await;
+    assert_eq!(status, StatusCode::NO_CONTENT);
+
+    // Сброс из свежего шафла работает, а из лобби — уже нет.
+    let (status, _) = call(
+        &app,
+        "POST",
+        &format!("/api/v1/rooms/{code}/reset"),
+        Some(&organizer),
+        None,
+    )
+    .await;
+    assert_eq!(status, StatusCode::NO_CONTENT);
+    let (status, _) = call(
+        &app,
+        "POST",
+        &format!("/api/v1/rooms/{code}/reset"),
+        Some(&organizer),
+        None,
+    )
+    .await;
+    assert_eq!(status, StatusCode::CONFLICT);
 }
 
 #[tokio::test]
@@ -328,24 +402,20 @@ async fn wishlist_crud_and_permissions() {
     )
     .await;
     assert_eq!(status, StatusCode::OK, "{item}");
-    assert_eq!(item["source"], json!("manual"));
     assert_eq!(item["url"], Value::Null);
     let item_id = item["id"].as_str().unwrap().to_string();
 
-    // WB-артикул: даже если card API недоступен (403 по IP), ссылка генерируется.
+    // Ручной товар со ссылкой.
     let (status, item) = call(
         &app,
         "POST",
         &format!("{base}/items"),
         Some(&anya),
-        Some(json!({"source": "wildberries", "code": "198340521", "title": "Носки"})),
+        Some(json!({"title": "Носки", "url": "https://example.com/item"})),
     )
     .await;
     assert_eq!(status, StatusCode::OK, "{item}");
-    assert_eq!(
-        item["url"],
-        json!("https://www.wildberries.ru/catalog/198340521/detail.aspx")
-    );
+    assert_eq!(item["url"], json!("https://example.com/item"));
 
     // Чужой PATCH запрещён, свой работает.
     let (status, _) = call(

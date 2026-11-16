@@ -20,6 +20,19 @@ export function readSessionToken(roomCode: string): string | null {
   return readSessions()[roomCode.trim().toUpperCase()] ?? null
 }
 
+export function readSessionCodes(): string[] {
+  return Object.keys(readSessions())
+}
+
+export function removeSessionToken(roomCode: string): void {
+  const sessions = { ...readSessions() }
+  delete sessions[roomCode.trim().toUpperCase()]
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions))
+  } catch {
+  }
+}
+
 export function saveSessionToken(roomCode: string, token: string): void {
   const sessions = { ...readSessions(), [roomCode.trim().toUpperCase()]: token }
   try {

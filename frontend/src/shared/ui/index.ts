@@ -8,13 +8,14 @@ export { Field } from './Field/Field'
 export type { FieldProps } from './Field/Field'
 export { Card } from './Card/Card'
 export type { CardProps } from './Card/Card'
+export { Modal } from './Modal/Modal'
+export type { ModalProps } from './Modal/Modal'
 export { Badge } from './Badge/Badge'
 export type { BadgeProps } from './Badge/Badge'
 export { Spinner } from './Spinner/Spinner'
-export { SegmentedControl } from './SegmentedControl/SegmentedControl'
-export type { SegmentedControlProps, SegmentedOption } from './SegmentedControl/SegmentedControl'
 export { Snowfall } from './Snowfall/Snowfall'
 export { Snowdrift } from './Snowdrift/Snowdrift'
+export { Garland } from './Garland/Garland'
 export { ThemeToggle } from './ThemeToggle/ThemeToggle'
 export { ToastProvider } from './toast/ToastProvider'
 export { useToast } from './toast/context'
@@ -24,9 +25,12 @@ export type { AvatarProps, AvatarPickerProps } from './avatar/Avatar'
 export {
   ArrowLeftIcon,
   ArrowRightIcon,
+  BanIcon,
   CopyIcon,
+  GearIcon,
   GiftIcon,
   HashIcon,
+  ListIcon,
   MoonIcon,
   PencilIcon,
   PlusIcon,

@@ -56,16 +56,16 @@ export class ApiClient {
     return this.request<T>(path)
   }
 
-  post<T>(path: string, body?: Json, headers?: HeadersInit): Promise<T> {
-    return this.request<T>(path, { method: 'POST', body: serialize(body), headers })
+  post<T>(path: string, body?: Json): Promise<T> {
+    return this.request<T>(path, { method: 'POST', body: serialize(body) })
   }
 
-  put<T>(path: string, body: Json, headers?: HeadersInit): Promise<T> {
-    return this.request<T>(path, { method: 'PUT', body: serialize(body), headers })
+  put<T>(path: string, body: Json): Promise<T> {
+    return this.request<T>(path, { method: 'PUT', body: serialize(body) })
   }
 
-  patch<T>(path: string, body: Json, headers?: HeadersInit): Promise<T> {
-    return this.request<T>(path, { method: 'PATCH', body: serialize(body), headers })
+  patch<T>(path: string, body: Json): Promise<T> {
+    return this.request<T>(path, { method: 'PATCH', body: serialize(body) })
   }
 
   delete(path: string): Promise<void> {

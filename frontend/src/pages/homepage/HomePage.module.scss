@@ -10,7 +10,7 @@
   z-index: 1;
   width: min(1120px, 100%);
   margin: 0 auto;
-  padding: 20px 24px;
+  padding: 54px 24px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -78,6 +78,11 @@
 }
 
 .profile {
+  grid-column: 1 / -1;
+}
+
+// Список комнат — во всю ширину над формами.
+.myRooms {
   grid-column: 1 / -1;
 }
 

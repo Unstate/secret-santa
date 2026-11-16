@@ -1,7 +1,5 @@
 export type RoomStatus = 'lobby' | 'shuffled'
 
-export type WishlistSource = 'manual' | 'wildberries' | 'ozon'
-
 export type ApiErrorCode =
   | 'room_not_found'
   | 'name_taken'
@@ -9,7 +7,6 @@ export type ApiErrorCode =
   | 'forbidden'
   | 'unauthorized'
   | 'wrong_status'
-  | 'reshuffle_blocked'
   | 'shuffle_impossible'
   | 'shuffle_not_ready'
   | 'item_not_found'
@@ -102,42 +99,18 @@ export interface WishlistItem {
   url: string | null
   imageUrl: string | null
   price: number | null
-  inStock: boolean | null
-  source: WishlistSource
 }
 
 export interface AddWishlistItemRequest {
-  source?: WishlistSource
-  code?: string
-  title?: string
+  title: string
   url?: string
-  imageUrl?: string
   price?: number
-  inStock?: boolean
 }
 
 export interface PatchWishlistItemRequest {
   title?: string
   url?: string
-  imageUrl?: string
   price?: number
-  inStock?: boolean
-}
-
-export interface ParseProductRequest {
-  source: Exclude<WishlistSource, 'manual'>
-  code: string
-}
-
-export interface ParseProductResponse {
-  source: WishlistSource
-  code: string
-  link: string | null
-  title: string | null
-  imageUrl: string | null
-  price: number | null
-  inStock: boolean | null
-  parsed: boolean
 }
 
 export type RoomEvent =
@@ -147,3 +120,4 @@ export type RoomEvent =
   | { type: 'exclusionsUpdated' }
   | { type: 'wishlistUpdated'; playerId: string }
   | { type: 'shuffleCompleted' }
+  | { type: 'roomReset' }

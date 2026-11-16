@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Avatar, Badge, Button, Card, useToast } from '@/shared/ui'
+import { useEffect, useRef, useState } from 'react'
+import { Avatar, Button, Card, useToast } from '@/shared/ui'
 import { useGet } from '@/shared/hooks'
 import { formatMoney } from '@/shared/lib'
 import type { MyAssignmentResponse } from '@/shared/api'
@@ -7,23 +7,40 @@ import styles from './MyAssignmentCard.module.scss'
 
 interface MyAssignmentCardProps {
   code: string
+  // Растёт при каждом событии комнаты (WS) — триггер живой синхронизации.
+  syncTick?: number
 }
 
-// GET /me/assignment проставляет viewed_at — закрывает организатору ресафл.
-// Поэтому грузим только по явному клику, не при входе в комнату.
-export function MyAssignmentCard({ code }: MyAssignmentCardProps) {
+export function MyAssignmentCard({ code, syncTick = 0 }: MyAssignmentCardProps) {
   const { get, loading } = useGet<MyAssignmentResponse>(`/rooms/${code}/me/assignment`)
   const [assignment, setAssignment] = useState<MyAssignmentResponse | null>(null)
+  const revealedRef = useRef(false)
   const toast = useToast()
 
   async function reveal() {
     const result = await get()
     if (result.ok) {
+      revealedRef.current = true
       setAssignment(result.data)
     } else {
       toast.error(result.error.message)
     }
   }
+
+  // После открытия карточка живёт: обновил вишлист получатель — увидел сразу;
+  // организатор пересобрал пары — появился новый получатель; сбросил шафл —
+  // карточка возвращается в закрытое состояние.
+  useEffect(() => {
+    if (!revealedRef.current) return
+    void get().then((result) => {
+      if (result.ok) {
+        setAssignment(result.data)
+      } else if (result.error.code === 'shuffle_not_ready') {
+        revealedRef.current = false
+        setAssignment(null)
+      }
+    })
+  }, [syncTick, get])
 
   return (
     <Card className={styles.card}>
@@ -31,8 +48,7 @@ export function MyAssignmentCard({ code }: MyAssignmentCardProps) {
       {assignment == null ? (
         <>
           <p className={styles.text}>
-            Узнаешь получателя и его вишлист. После открытия организатор уже не сможет пересобрать
-            пары — открывай, когда все точно в сборе.
+            Узнаешь получателя и его вишлист. Что получатель добавит позже — увидишь здесь сразу.
           </p>
           <Button block loading={loading} onClick={reveal}>
             Открыть, кому я дарю
@@ -61,7 +77,6 @@ export function MyAssignmentCard({ code }: MyAssignmentCardProps) {
                     )}
                   </span>
                   <span className={styles.itemMeta}>
-                    {item.inStock === false && <Badge tone="neutral">нет в наличии</Badge>}
                     {item.price != null && <span className={styles.price}>{formatMoney(item.price)}</span>}
                   </span>
                 </li>

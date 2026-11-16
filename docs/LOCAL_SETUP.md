@@ -108,16 +108,13 @@ scripts/dev-seed.sh 4
 - WebSocket: `ws://localhost:8080/api/v1/rooms/{code}/ws?token=<token>`.
   События — JSON с полем `type`: `roomUpdated`, `playerJoined`,
   `exclusionsUpdated` (только организатору), `wishlistUpdated`,
-  `shuffleCompleted`. Пары в событиях не передаются никогда. После
+  `shuffleCompleted`, `roomReset`. Пары в событиях не передаются никогда. После
   реконнекта — перечитать `GET /rooms/{code}`.
 - Ошибки: любой ненулевой статус → `{"code": "...", "message": "..."}`.
   Коды: `room_not_found`, `name_taken`, `not_organizer`, `forbidden`,
-  `unauthorized`, `wrong_status`, `reshuffle_blocked`, `shuffle_impossible`,
+  `unauthorized`, `wrong_status`, `shuffle_impossible`,
   `shuffle_not_ready`, `item_not_found`, `validation_failed`.
 - Деньги — целые **копейки** (`budget: 200000` = 2 000 ₽).
-- `POST /tools/parse-product` может вернуть `parsed: false` (например, WB
-  режет запросы по IP) — показывайте ручной ввод, ссылка в ответе всё равно
-  есть.
 
 Шпаргалка эндпоинтов (полные схемы — BACKEND.md §5):
 
@@ -129,12 +126,12 @@ scripts/dev-seed.sh 4
 | настройки комнаты | `PATCH /api/v1/rooms/{code}` `{name?, budget?}` (орг) |
 | исключения, полная замена | `PUT /api/v1/rooms/{code}/exclusions` `{exclusions: [{playerId, blockedRecipientId}]}` (орг) |
 | шафл / ресафл | `POST /api/v1/rooms/{code}/shuffle` (орг) |
+| сброс шафла в лобби | `POST /api/v1/rooms/{code}/reset` (орг) |
 | кому я дарю + вишлист получателя | `GET /api/v1/rooms/{code}/me/assignment` |
 | полный порядок пар | `GET /api/v1/rooms/{code}/assignments` (орг) |
 | все вишлисты комнаты | `GET /api/v1/rooms/{code}/wishlist` |
-| добавить товар | `POST /api/v1/rooms/{code}/wishlist/items` `{source?, code?, title?, url?, imageUrl?, price?, inStock?}` |
+| добавить товар | `POST /api/v1/rooms/{code}/wishlist/items` `{title, url?, price?}` |
 | править / удалить свой товар | `PATCH` / `DELETE /api/v1/rooms/{code}/wishlist/items/{id}` |
-| превью товара по коду | `POST /api/v1/tools/parse-product` `{source, code}` |
 
 ## 7. Сбросить данные
 

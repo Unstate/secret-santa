@@ -1,10 +1,11 @@
-import { CreateRoomForm, JoinRoomForm, PlayerProfileCard } from '@/features'
-import { Snowfall, Snowdrift, ThemeToggle, SnowflakeIcon } from '@/shared/ui'
+import { CreateRoomForm, JoinRoomForm, MyRoomsCard, PlayerProfileCard } from '@/features'
+import { Snowfall, Snowdrift, ThemeToggle, SnowflakeIcon, Garland } from '@/shared/ui'
 import styles from './HomePage.module.scss'
 
 export function HomePage() {
   return (
     <div className={styles.page}>
+      <Garland />
       <Snowfall />
       <Snowdrift />
       <header className={styles.header}>
@@ -18,11 +19,12 @@ export function HomePage() {
         <div className={styles.hero}>
           <h1 className={styles.title}>Распределите подарки по-честному и в тайне</h1>
           <p className={styles.subtitle}>
-            Создайте комнату и позвайте друзей по ссылке. Шафл с исключениями, вишлисты
-            с Wildberries и Ozon, милые звери и снег — всё остальное берём на себя.
+            Создайте комнату и позвайте друзей по ссылке. Шафл с исключениями, вишлисты,
+            милые звери и снег — всё остальное берём на себя.
           </p>
         </div>
         <div className={styles.cards}>
+          <MyRoomsCard className={styles.myRooms} />
           <PlayerProfileCard className={styles.profile} />
           <CreateRoomForm />
           <JoinRoomForm />

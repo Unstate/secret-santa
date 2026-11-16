@@ -1,24 +1,12 @@
-.card {
-  height: 100%;
-}
-
-.title {
-  font-family: var(--font-display);
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--text);
-  margin-bottom: 14px;
-}
-
 .text {
   font-size: 14px;
   line-height: 1.5;
   color: var(--text-soft);
-  margin-bottom: 18px;
+  margin: 0 0 18px;
 }
 
 .confirm {
-  margin-bottom: 14px;
+  margin-bottom: 4px;
 }
 
 .confirmText {
@@ -80,4 +68,5 @@
   font-size: 13px;
   line-height: 1.5;
   color: var(--text-faint);
+  margin: 0;
 }

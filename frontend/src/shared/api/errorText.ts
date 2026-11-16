@@ -13,7 +13,6 @@ const CODE_TEXT: Record<ApiErrorCode, string> = {
   forbidden: 'Нет доступа к этой комнате',
   unauthorized: 'Сначала войди в комнату',
   wrong_status: 'Комната уже в другом статусе — обнови страницу',
-  reshuffle_blocked: 'Пересобрать пары нельзя: кто-то уже открыл, кому он дарит',
   shuffle_impossible: 'Шафл невозможен с такими исключениями',
   shuffle_not_ready: 'Шафл ещё не проводился',
   item_not_found: 'Товар уже удалён — обнови вишлист',

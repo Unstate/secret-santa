@@ -1,19 +1,7 @@
-import { useState } from 'react'
-import {
-  Avatar,
-  Badge,
-  Button,
-  Card,
-  Field,
-  Input,
-  SegmentedControl,
-  Snowfall,
-  ThemeToggle,
-} from '@/shared/ui'
+import { Avatar, Badge, Button, Card, Field, Input, Snowfall, ThemeToggle } from '@/shared/ui'
 import styles from './DevShowcase.module.scss'
 
 export function DevShowcase() {
-  const [market, setMarket] = useState<'wildberries' | 'ozon'>('wildberries')
   return (
     <div className={styles.page}>
       <Snowfall />
@@ -46,17 +34,6 @@ export function DevShowcase() {
             </Field>
             <Field label="Имя" error="Введите имя">
               <Input invalid placeholder="" />
-            </Field>
-            <Field label="Маркетплейс">
-              <SegmentedControl
-                aria-label="Маркетплейс"
-                value={market}
-                onChange={setMarket}
-                options={[
-                  { value: 'wildberries', label: 'Wildberries' },
-                  { value: 'ozon', label: 'Ozon' },
-                ]}
-              />
             </Field>
           </div>
         </Card>

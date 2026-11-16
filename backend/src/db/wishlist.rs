@@ -11,8 +11,6 @@ pub struct WishlistItem {
     pub url: Option<String>,
     pub image_url: Option<String>,
     pub price: Option<i64>,
-    pub in_stock: Option<bool>,
-    pub source: String,
 }
 
 pub struct NewItem<'a> {
@@ -22,17 +20,15 @@ pub struct NewItem<'a> {
     pub url: Option<&'a str>,
     pub image_url: Option<&'a str>,
     pub price: Option<i64>,
-    pub in_stock: Option<bool>,
-    pub source: &'a str,
 }
 
-const COLUMNS: &str = "id, room_id, player_id, title, url, image_url, price, in_stock, source";
+const COLUMNS: &str = "id, room_id, player_id, title, url, image_url, price";
 
 pub async fn insert(db: impl PgExecutor<'_>, item: NewItem<'_>) -> sqlx::Result<WishlistItem> {
     sqlx::query_as::<_, WishlistItem>(
-        "insert into wishlist_items (room_id, player_id, title, url, image_url, price, in_stock, source)
-         values ($1, $2, $3, $4, $5, $6, $7, $8)
-         returning id, room_id, player_id, title, url, image_url, price, in_stock, source",
+        "insert into wishlist_items (room_id, player_id, title, url, image_url, price)
+         values ($1, $2, $3, $4, $5, $6)
+         returning id, room_id, player_id, title, url, image_url, price",
     )
     .bind(item.room_id)
     .bind(item.player_id)
@@ -40,8 +36,6 @@ pub async fn insert(db: impl PgExecutor<'_>, item: NewItem<'_>) -> sqlx::Result<
     .bind(item.url)
     .bind(item.image_url)
     .bind(item.price)
-    .bind(item.in_stock)
-    .bind(item.source)
     .fetch_one(db)
     .await
 }
@@ -57,17 +51,15 @@ pub async fn find_by_id(db: impl PgExecutor<'_>, id: Uuid) -> sqlx::Result<Optio
 
 pub async fn update(db: impl PgExecutor<'_>, item: &WishlistItem) -> sqlx::Result<WishlistItem> {
     sqlx::query_as::<_, WishlistItem>(
-        "update wishlist_items set title = $2, url = $3, image_url = $4, price = $5, in_stock = $6, source = $7
+        "update wishlist_items set title = $2, url = $3, image_url = $4, price = $5
          where id = $1
-         returning id, room_id, player_id, title, url, image_url, price, in_stock, source",
+         returning id, room_id, player_id, title, url, image_url, price",
     )
     .bind(item.id)
     .bind(&item.title)
     .bind(&item.url)
     .bind(&item.image_url)
     .bind(item.price)
-    .bind(item.in_stock)
-    .bind(&item.source)
     .fetch_one(db)
     .await
 }

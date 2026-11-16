@@ -10,7 +10,7 @@
   z-index: 1;
   width: min(1120px, 100%);
   margin: 0 auto;
-  padding: 20px 24px;
+  padding: 54px 24px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -81,15 +81,32 @@
   color: var(--text);
 }
 
-.cards {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  align-items: stretch;
+// Единственная колонка комнаты: плашка «это ты», игроки, действия, «кому я дарю».
+.column {
+  width: min(680px, 100%);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
 
-  @include tablet {
-    grid-template-columns: 1fr;
-  }
+// Плашка, выделяющая текущего игрока среди остальных.
+.youPlate {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  border-radius: var(--radius-m);
+  background: var(--primary-soft);
+  border: 1px solid var(--border);
+}
+
+.youName {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  margin-right: auto;
 }
 
 .join {
@@ -109,26 +126,27 @@
   padding: 80px 0;
 }
 
-.cardTitle {
+.playersHead {
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.cardTitle {
   font-family: var(--font-display);
   font-size: 20px;
   font-weight: 700;
   color: var(--text);
-  margin-bottom: 14px;
+  margin: 0;
 }
 
-.cardIcon {
-  color: var(--primary);
-}
-
-.cardText {
-  font-size: 14px;
-  line-height: 1.5;
-  color: var(--text-soft);
-  margin-bottom: 18px;
+// Ряд действий: попапы + главная кнопка шафла.
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .players {

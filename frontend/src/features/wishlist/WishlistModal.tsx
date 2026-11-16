@@ -1,15 +1,16 @@
 import { useEffect, useState } from 'react'
-import { Badge, Button, Card, Input, PencilIcon, Spinner, XIcon, useToast } from '@/shared/ui'
+import { Button, Input, Modal, PencilIcon, PlusIcon, Spinner, XIcon, useToast } from '@/shared/ui'
 import { api } from '@/shared/api'
 import type { WishlistItem } from '@/shared/api'
 import { toApiError, useGet } from '@/shared/hooks'
 import { formatMoney, parseRubles, rublesToKopecks } from '@/shared/lib'
 import { AddWishlistItemForm } from './AddWishlistItemForm'
-import styles from './WishlistCard.module.scss'
+import styles from './WishlistModal.module.scss'
 
-interface WishlistCardProps {
+interface WishlistModalProps {
   roomCode: string
   meId: string
+  onClose: () => void
 }
 
 interface EditState {
@@ -19,7 +20,7 @@ interface EditState {
 }
 
 // Свой вишлист: правит и удаляет только владелец (это проверяет и сервер).
-export function WishlistCard({ roomCode, meId }: WishlistCardProps) {
+export function WishlistModal({ roomCode, meId, onClose }: WishlistModalProps) {
   const base = `/rooms/${roomCode}/wishlist`
   const { data, error: loadError, loading, get } = useGet<WishlistItem[]>(base)
   const [adding, setAdding] = useState(false)
@@ -40,6 +41,10 @@ export function WishlistCard({ roomCode, meId }: WishlistCardProps) {
     setEditError(null)
   }
 
+  function handleClose() {
+    closeForms()
+    onClose()
+  }
   async function handleDelete(item: WishlistItem) {
     setBusyId(item.id)
     try {
@@ -92,15 +97,7 @@ export function WishlistCard({ roomCode, meId }: WishlistCardProps) {
   }
 
   return (
-    <Card className={styles.card}>
-      <div className={styles.head}>
-        <h2 className={styles.title}>Мой вишлист</h2>
-        {!adding && edit == null && (
-          <Button variant="soft" size="m" icon={<PencilIcon size={16} />} onClick={() => setAdding(true)}>
-            Добавить
-          </Button>
-        )}
-      </div>
+    <Modal onClose={handleClose} title="Мой вишлист">
       <p className={styles.text}>Что ты хочешь получить — увидит тот, кто тебе подарит.</p>
 
       {loading && myItems.length === 0 && <Spinner size={22} />}
@@ -151,10 +148,6 @@ export function WishlistCard({ roomCode, meId }: WishlistCardProps) {
                   )}
                 </span>
                 <span className={styles.itemMeta}>
-                  {item.source !== 'manual' && (
-                    <Badge tone="neutral">{item.source === 'wildberries' ? 'WB' : 'Ozon'}</Badge>
-                  )}
-                  {item.inStock === false && <Badge tone="gold">нет в наличии</Badge>}
                   {item.price != null && <span className={styles.price}>{formatMoney(item.price)}</span>}
                 </span>
                 <span className={styles.itemButtons}>
@@ -182,7 +175,7 @@ export function WishlistCard({ roomCode, meId }: WishlistCardProps) {
         </ul>
       )}
 
-      {adding && (
+      {adding ? (
         <AddWishlistItemForm
           roomCode={roomCode}
           onAdded={() => {
@@ -191,7 +184,13 @@ export function WishlistCard({ roomCode, meId }: WishlistCardProps) {
           }}
           onCancel={closeForms}
         />
+      ) : (
+        edit == null && (
+          <Button variant="soft" size="m" icon={<PlusIcon size={16} />} onClick={() => setAdding(true)}>
+            Добавить подарок
+          </Button>
+        )
       )}
-    </Card>
+    </Modal>
   )
 }

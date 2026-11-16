@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router'
 import { z } from 'zod'
 import { Button, Card, Field, GiftIcon, Input, useToast } from '@/shared/ui'
 import { usePost } from '@/shared/hooks'
@@ -28,6 +29,7 @@ export function CreateRoomForm() {
   const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({})
   const create = usePost<CreateRoomRequest, CreateRoomResponse>('/rooms')
   const toast = useToast()
+  const navigate = useNavigate()
 
   async function handleSubmit(event: React.SubmitEvent) {
     event.preventDefault()
@@ -53,7 +55,8 @@ export function CreateRoomForm() {
     })
     if (result.ok) {
       saveSessionToken(result.data.room.code, result.data.player.token)
-      toast.success(`Комната «${result.data.room.name}» создана — код ${result.data.room.code}`)
+      // Сразу в комнату: она готова, токен организатора уже сохранён.
+      navigate(`/room/${result.data.room.code}`)
     } else {
       toast.error(apiErrorText(result.error))
     }

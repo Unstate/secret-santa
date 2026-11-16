@@ -1,0 +1,12 @@
+.text {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-soft);
+  margin: 0 0 18px;
+}
+
+.resetButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}

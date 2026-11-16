@@ -30,6 +30,7 @@ pub enum RoomEvent {
         player_id: Uuid,
     },
     ShuffleCompleted,
+    RoomReset,
 }
 
 #[derive(Clone, Default)]

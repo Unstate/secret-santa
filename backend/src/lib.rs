@@ -2,7 +2,6 @@ pub mod auth;
 pub mod db;
 pub mod domain;
 pub mod error;
-pub mod parser;
 pub mod routes;
 pub mod state;
 pub mod ws;
@@ -70,7 +69,6 @@ pub async fn run() -> anyhow::Result<()> {
     let state = AppState {
         db,
         events: ws::EventHub::default(),
-        parsers: parser::ParserRegistry::new(),
     };
 
     let listener = tokio::net::TcpListener::bind(("0.0.0.0", port)).await?;

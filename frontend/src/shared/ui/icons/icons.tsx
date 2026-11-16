@@ -137,3 +137,37 @@ export function XIcon({ size = 20, className }: IconProps) {
     </svg>
   )
 }
+
+export function GearIcon({ size = 20, className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" width={size} height={size} className={className} fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="3.2" stroke="currentColor" strokeWidth="2" />
+      <path
+        d="M12 3.5l1 2.6a6.2 6.2 0 0 1 2.3 1l2.7-.6 1.5 2.6-1.9 2a6.3 6.3 0 0 1 0 2.6l1.9 2-1.5 2.6-2.7-.6a6.2 6.2 0 0 1-2.3 1l-1 2.7h-3l-1-2.7a6.2 6.2 0 0 1-2.3-1l-2.7.6-1.5-2.6 1.9-2a6.3 6.3 0 0 1 0-2.6l-1.9-2 1.5-2.6 2.7.6a6.2 6.2 0 0 1 2.3-1l1-2.7h3Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
+export function BanIcon({ size = 20, className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" width={size} height={size} className={className} fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="8.5" stroke="currentColor" strokeWidth="2" />
+      <path d="M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+export function ListIcon({ size = 20, className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" width={size} height={size} className={className} fill="none" aria-hidden="true">
+      <path d="M9 6h11M9 12h11M9 18h11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <circle cx="4.8" cy="6" r="1.4" fill="currentColor" />
+      <circle cx="4.8" cy="12" r="1.4" fill="currentColor" />
+      <circle cx="4.8" cy="18" r="1.4" fill="currentColor" />
+    </svg>
+  )
+}
