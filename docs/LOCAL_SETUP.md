@@ -127,7 +127,8 @@ scripts/dev-seed.sh 4
 | исключения, полная замена | `PUT /api/v1/rooms/{code}/exclusions` `{exclusions: [{playerId, blockedRecipientId}]}` (орг) |
 | шафл / ресафл | `POST /api/v1/rooms/{code}/shuffle` (орг) |
 | сброс шафла в лобби | `POST /api/v1/rooms/{code}/reset` (орг) |
-| кому я дарю + вишлист получателя | `GET /api/v1/rooms/{code}/me/assignment` |
+| кому я дарю + вишлист и комментарий получателя | `GET /api/v1/rooms/{code}/me/assignment` |
+| комментарий к своему вишлисту | `PUT /api/v1/rooms/{code}/me/wishlist-comment` `{comment}` (пустой — удалить, ≤500 символов) |
 | полный порядок пар | `GET /api/v1/rooms/{code}/assignments` (орг) |
 | все вишлисты комнаты | `GET /api/v1/rooms/{code}/wishlist` |
 | добавить товар | `POST /api/v1/rooms/{code}/wishlist/items` `{title, url?, price?}` |

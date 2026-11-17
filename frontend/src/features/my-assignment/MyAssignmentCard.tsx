@@ -61,6 +61,12 @@ export function MyAssignmentCard({ code, syncTick = 0 }: MyAssignmentCardProps) 
             <span className={styles.recipientName}>{assignment.recipient.name}</span>
           </div>
           <h3 className={styles.wishlistTitle}>Его вишлист</h3>
+          {assignment.comment != null && (
+            <p className={styles.comment}>
+              <span className={styles.commentLabel}>Комментарий:</span>
+              {assignment.comment}
+            </p>
+          )}
           {assignment.wishlist.length === 0 ? (
             <p className={styles.empty}>Вишлист пустой — выбери подарок на свой вкус.</p>
           ) : (

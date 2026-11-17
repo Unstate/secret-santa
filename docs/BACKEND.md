@@ -64,14 +64,15 @@ create table rooms (
 );
 
 create table players (
-    id           uuid primary key default gen_random_uuid(),
-    room_id      uuid not null references rooms(id) on delete cascade,
-    name         varchar(32) not null,
-    avatar       smallint    not null,                 -- id милой картинки-животного
-    is_organizer boolean     not null default false,
-    token_hash   char(64)    not null unique,          -- sha256(token), сам token не храним
-    created_at   timestamptz not null default now(),
-    last_seen_at timestamptz not null default now()
+    id                uuid primary key default gen_random_uuid(),
+    room_id           uuid not null references rooms(id) on delete cascade,
+    name              varchar(32) not null,
+    avatar            smallint    not null,                 -- id милой картинки-животного
+    is_organizer      boolean     not null default false,
+    wishlist_comment  varchar(500),                         -- заметка к своему вишлисту, видит дарящий
+    token_hash        char(64)    not null unique,          -- sha256(token), сам token не храним
+    created_at        timestamptz not null default now(),
+    last_seen_at      timestamptz not null default now()
 );
 
 -- имя уникально в рамках комнаты
@@ -150,7 +151,8 @@ WS-событиям пары недоступны никогда; эндпоин
 | POST | `/rooms/{code}/shuffle` | организатор | запуск шафла (см. §7) |
 | POST | `/rooms/{code}/reset` | организатор | сброс шафла: пары удаляются, статус → `lobby`; вишлисты и исключения остаются, вход снова открыт (409, если уже в лобби) |
 | GET | `/rooms/{code}/assignments` | организатор | полный порядок пар — кнопка-проверка шафла (§4) |
-| GET | `/rooms/{code}/me/assignment` | участник | `{recipient: {name, avatar, wishlist[]}}` или 409, если шафла ещё не было |
+| GET | `/rooms/{code}/me/assignment` | участник | `{recipient: {name, avatar}, comment, wishlist[]}` или 409, если шафла ещё не было; `comment` — заметка получателя к своему вишлисту |
+| PUT | `/rooms/{code}/me/wishlist-comment` | участник | сохранить комментарий к своему вишлисту `{comment}` (≤500 символов, пустая строка/null — удалить); виден дарящему |
 | GET | `/rooms/{code}/wishlist` | участник | все вишлисты комнаты одним списком |
 | POST | `/rooms/{code}/wishlist/items` | участник | добавить item `{title, url?, price?}` |
 | PATCH / DELETE | `/rooms/{code}/wishlist/items/{id}` | владелец | правка / удаление |
@@ -174,7 +176,8 @@ WS-событиям пары недоступны никогда; эндпоин
 - `room.updated` `{name, budget, status}`
 - `player.joined` / `player.left` `{player}`
 - `exclusions.updated` — рассылается **только организатору**
-- `wishlist.updated` `{playerId, items[]}` — всем (вишлисты публичны внутри комнаты)
+- `wishlist.updated` `{playerId, items[]}` — всем (вишлисты публичны внутри комнаты; то же
+  событие — при изменении комментария к вишлисту)
 - `shuffle.completed` `{}` — всем; пар в событии нет
 
 **Переподключение:** после reconnect клиент перезапрашивает
@@ -322,8 +325,9 @@ frontend/Dockerfile
 
 **Реализовано в бекенде (15.11):** полный REST + WS-роут (§5, §6), шафл
 с исключениями, кнопка-проверка организатора, ресафл без ограничений по
-просмотрам, ручные
-вишлисты, единые ошибки `{code, message}`. Проверено смоук-тестом и
+просмотрам, сброс шафла в лобби, ручные
+вишлисты с комментарием для дарящего, единые ошибки `{code, message}`.
+Проверено смоук-тестом и
 интеграционными тестами на живом Postgres (полный цикл комнаты, права,
 WS-события). Крейт собран как lib + bin: интеграционные тесты из `tests/`
 дергают его напрямую.

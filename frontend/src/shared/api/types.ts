@@ -33,6 +33,8 @@ export interface Player {
   name: string
   avatar: number
   isOrganizer: boolean
+  /** Комментарий к своему вишлисту — видит тот, кому выпало дарить. */
+  wishlistComment: string | null
 }
 
 export interface PlayerWithToken extends Player {
@@ -83,6 +85,8 @@ export interface Recipient {
 
 export interface MyAssignmentResponse {
   recipient: Recipient
+  /** Комментарий получателя к своему вишлисту. */
+  comment: string | null
   wishlist: WishlistItem[]
 }
 

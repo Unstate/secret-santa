@@ -1,0 +1,5 @@
+# Индексировать нечего, кроме главной: комнаты приватные.
+User-agent: *
+Allow: /
+Disallow: /room/
+Disallow: /dev/

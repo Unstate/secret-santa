@@ -10,7 +10,7 @@ import {
   RoomShuffleModal,
   WishlistModal,
 } from '@/features'
-import { useGet, useRoomEvents } from '@/shared/hooks'
+import { useDocumentTitle, useGet, useRoomEvents } from '@/shared/hooks'
 import { readSessionToken } from '@/shared/api'
 import type { RoomDetails } from '@/shared/api'
 import { formatMoney, normalizeRoomCode } from '@/shared/lib'
@@ -47,6 +47,7 @@ export function RoomPage() {
   const [wsTick, setWsTick] = useState(0)
   const close = useCallback(() => setActiveModal(null), [])
   const toast = useToast()
+  useDocumentTitle(room?.name ?? null)
 
   useEffect(() => {
     void get()
@@ -220,7 +221,12 @@ export function RoomPage() {
 
       {/* Попапы монтируются только когда открыты — состояние всегда свежее */}
       {activeModal === 'wishlist' && (
-        <WishlistModal roomCode={details.code} meId={details.me.id} onClose={close} />
+        <WishlistModal
+          roomCode={details.code}
+          meId={details.me.id}
+          comment={details.me.wishlistComment}
+          onClose={close}
+        />
       )}
       {details.me.isOrganizer && (
         <>

@@ -6,7 +6,7 @@ pub mod ws;
 
 use axum::{
     Router,
-    routing::{get, patch, post},
+    routing::{get, patch, post, put},
 };
 
 use crate::state::AppState;
@@ -26,6 +26,10 @@ pub fn router() -> Router<AppState> {
         .route("/rooms/{code}/shuffle", post(shuffle::shuffle))
         .route("/rooms/{code}/reset", post(shuffle::reset))
         .route("/rooms/{code}/me/assignment", get(shuffle::my_assignment))
+        .route(
+            "/rooms/{code}/me/wishlist-comment",
+            put(wishlist::put_wishlist_comment),
+        )
         .route("/rooms/{code}/assignments", get(shuffle::all_assignments))
         .route("/rooms/{code}/wishlist", get(wishlist::list_wishlist))
         .route("/rooms/{code}/wishlist/items", post(wishlist::add_item))

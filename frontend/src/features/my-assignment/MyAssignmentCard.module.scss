@@ -42,6 +42,25 @@
   margin-bottom: 12px;
 }
 
+// Пожелание получателя к своему вишлисту.
+.comment {
+  display: flex;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: var(--radius-m);
+  background: var(--accent-soft);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text);
+  margin-bottom: 12px;
+  overflow-wrap: anywhere;
+}
+
+.commentLabel {
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
 .items {
   list-style: none;
   margin: 0;

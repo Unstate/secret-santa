@@ -31,7 +31,7 @@ pub async fn find_recipient_of(
     giver_id: Uuid,
 ) -> sqlx::Result<Option<Player>> {
     sqlx::query_as::<_, Player>(
-        "select p2.id, p2.room_id, p2.name, p2.avatar, p2.is_organizer
+        "select p2.id, p2.room_id, p2.name, p2.avatar, p2.is_organizer, p2.wishlist_comment
          from assignments a
          join players p2 on p2.id = a.recipient_id
          where a.giver_id = $1",

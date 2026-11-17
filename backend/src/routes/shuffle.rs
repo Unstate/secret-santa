@@ -108,10 +108,10 @@ pub struct RecipientDto {
     avatar: i16,
 }
 
-fn to_dto(player: db::players::Player) -> RecipientDto {
+fn to_dto(player: &db::players::Player) -> RecipientDto {
     RecipientDto {
         id: player.id,
-        name: player.name,
+        name: player.name.clone(),
         avatar: player.avatar,
     }
 }
@@ -120,6 +120,8 @@ fn to_dto(player: db::players::Player) -> RecipientDto {
 #[serde(rename_all = "camelCase")]
 pub struct MyAssignmentResponse {
     recipient: RecipientDto,
+    /// Комментарий получателя к своему вишлисту.
+    comment: Option<String>,
     wishlist: Vec<db::wishlist::WishlistItem>,
 }
 
@@ -141,7 +143,8 @@ pub async fn my_assignment(
     let wishlist = db::wishlist::list_by_player(&state.db, recipient.id).await?;
 
     Ok(Json(MyAssignmentResponse {
-        recipient: to_dto(recipient),
+        recipient: to_dto(&recipient),
+        comment: recipient.wishlist_comment,
         wishlist,
     }))
 }
@@ -181,8 +184,8 @@ pub async fn all_assignments(
             ApiError::Internal(anyhow::anyhow!("в парах шафла нет игрока {recipient_id}"))
         })?;
         result.push(AssignmentPair {
-            giver: to_dto(giver.clone()),
-            recipient: to_dto(recipient.clone()),
+            giver: to_dto(giver),
+            recipient: to_dto(recipient),
         });
     }
 

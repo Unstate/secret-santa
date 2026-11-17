@@ -173,3 +173,47 @@ pub async fn list_wishlist(
     let items = db::wishlist::list_by_room(&state.db, room.id).await?;
     Ok(Json(items))
 }
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WishlistCommentRequest {
+    comment: Option<String>,
+}
+
+// Комментарий к своему вишлисту («этот — точно, из остального — на ваш выбор»):
+// его видит тот, кому выпало дарить. Пустая строка или null — удалить.
+pub async fn put_wishlist_comment(
+    State(state): State<AppState>,
+    Path(code): Path<String>,
+    player: AuthedPlayer,
+    Json(req): Json<WishlistCommentRequest>,
+) -> Result<StatusCode, ApiError> {
+    let room = db::rooms::find_by_code(&state.db, &code)
+        .await?
+        .ok_or(ApiError::RoomNotFound)?;
+    if player.room_id != room.id {
+        return Err(ApiError::Forbidden);
+    }
+
+    let comment = req
+        .comment
+        .as_deref()
+        .map(str::trim)
+        .filter(|comment| !comment.is_empty());
+    if let Some(comment) = comment
+        && comment.chars().count() > 500
+    {
+        return Err(ApiError::Validation(
+            "комментарий — не длиннее 500 символов".into(),
+        ));
+    }
+
+    db::players::set_wishlist_comment(&state.db, player.id, comment).await?;
+    state.events.publish(
+        &room.code,
+        RoomEvent::WishlistUpdated {
+            player_id: player.id,
+        },
+    );
+    Ok(StatusCode::NO_CONTENT)
+}

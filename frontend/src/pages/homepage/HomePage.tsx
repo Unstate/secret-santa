@@ -1,8 +1,11 @@
 import { CreateRoomForm, JoinRoomForm, MyRoomsCard, PlayerProfileCard } from '@/features'
+import { useDocumentTitle } from '@/shared/hooks'
 import { Snowfall, Snowdrift, ThemeToggle, SnowflakeIcon, Garland } from '@/shared/ui'
 import styles from './HomePage.module.scss'
 
 export function HomePage() {
+  useDocumentTitle(null)
+
   return (
     <div className={styles.page}>
       <Garland />

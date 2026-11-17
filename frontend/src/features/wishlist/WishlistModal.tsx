@@ -1,5 +1,15 @@
 import { useEffect, useState } from 'react'
-import { Button, Input, Modal, PencilIcon, PlusIcon, Spinner, XIcon, useToast } from '@/shared/ui'
+import {
+  Button,
+  Input,
+  Modal,
+  PencilIcon,
+  PlusIcon,
+  Spinner,
+  Textarea,
+  XIcon,
+  useToast,
+} from '@/shared/ui'
 import { api } from '@/shared/api'
 import type { WishlistItem } from '@/shared/api'
 import { toApiError, useGet } from '@/shared/hooks'
@@ -10,6 +20,8 @@ import styles from './WishlistModal.module.scss'
 interface WishlistModalProps {
   roomCode: string
   meId: string
+  /** Текущий комментарий игрока к вишлисту (приходит из данных комнаты). */
+  comment: string | null
   onClose: () => void
 }
 
@@ -20,7 +32,7 @@ interface EditState {
 }
 
 // Свой вишлист: правит и удаляет только владелец (это проверяет и сервер).
-export function WishlistModal({ roomCode, meId, onClose }: WishlistModalProps) {
+export function WishlistModal({ roomCode, meId, comment, onClose }: WishlistModalProps) {
   const base = `/rooms/${roomCode}/wishlist`
   const { data, error: loadError, loading, get } = useGet<WishlistItem[]>(base)
   const [adding, setAdding] = useState(false)
@@ -28,6 +40,14 @@ export function WishlistModal({ roomCode, meId, onClose }: WishlistModalProps) {
   const [editError, setEditError] = useState<string | null>(null)
   const [busyId, setBusyId] = useState<string | null>(null)
   const toast = useToast()
+
+  // Комментарий для дарящего: черновик поверх сохранённого значения.
+  const [commentDraft, setCommentDraft] = useState<string | null>(null)
+  const [commentSaved, setCommentSaved] = useState<string | null>(null)
+  const [commentBusy, setCommentBusy] = useState(false)
+  const savedComment = commentSaved ?? (comment ?? '')
+  const commentValue = commentDraft ?? savedComment
+  const commentDirty = commentValue !== savedComment
 
   useEffect(() => {
     void get()
@@ -96,9 +116,46 @@ export function WishlistModal({ roomCode, meId, onClose }: WishlistModalProps) {
     setEditError(null)
   }
 
+  async function handleCommentSave() {
+    const text = commentValue.trim()
+    setCommentBusy(true)
+    try {
+      await api.put(`/rooms/${roomCode}/me/wishlist-comment`, {
+        comment: text === '' ? null : text,
+      })
+      setCommentSaved(text)
+      setCommentDraft(null)
+      toast.success('Комментарий сохранён — его увидит твой дарильщик')
+    } catch (cause) {
+      toast.error(toApiError(cause).message)
+    } finally {
+      setCommentBusy(false)
+    }
+  }
+
   return (
     <Modal onClose={handleClose} title="Мой вишлист">
       <p className={styles.text}>Что ты хочешь получить — увидит тот, кто тебе подарит.</p>
+
+      <div className={styles.commentBlock}>
+        <div className={styles.commentHead}>
+          <span className={styles.commentLabel}>Комментарий для дарящего</span>
+          <span className={styles.commentCounter}>{commentValue.length}/500</span>
+        </div>
+        <Textarea
+          value={commentValue}
+          onChange={(event) => setCommentDraft(event.target.value)}
+          maxLength={500}
+          rows={2}
+          placeholder="Например: «Кружку хочу точно, из остального — что понравится»"
+          aria-label="Комментарий для дарящего"
+        />
+        {commentDirty && (
+          <Button size="m" loading={commentBusy} onClick={() => void handleCommentSave()}>
+            Сохранить комментарий
+          </Button>
+        )}
+      </div>
 
       {loading && myItems.length === 0 && <Spinner size={22} />}
       {loadError != null && !loading && (
