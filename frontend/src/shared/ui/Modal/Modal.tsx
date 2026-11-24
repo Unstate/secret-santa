@@ -15,9 +15,17 @@ export function Modal({ onClose, title, children }: ModalProps) {
   const panelRef = useRef<HTMLDivElement>(null)
   const savedOverflow = useRef('')
 
+  // Актуальный onClose — в ref: эффект ниже работает только при монтировании.
+  // Иначе пересоздание колбэка родителем перезапускало бы эффект на каждый
+  // рендер и возвращало фокус панели, воруя ввод у инпутов посреди печати.
+  const onCloseRef = useRef(onClose)
+  useEffect(() => {
+    onCloseRef.current = onClose
+  })
+
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose()
+      if (event.key === 'Escape') onCloseRef.current()
     }
     document.addEventListener('keydown', onKeyDown)
     savedOverflow.current = document.body.style.overflow
@@ -27,7 +35,7 @@ export function Modal({ onClose, title, children }: ModalProps) {
       document.removeEventListener('keydown', onKeyDown)
       document.body.style.overflow = savedOverflow.current
     }
-  }, [onClose])
+  }, [])
 
   return createPortal(
     <div
