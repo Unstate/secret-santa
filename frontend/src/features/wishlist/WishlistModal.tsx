@@ -10,9 +10,8 @@ import {
   XIcon,
   useToast,
 } from '@/shared/ui'
-import { api } from '@/shared/api'
+import { useDelete, useGet, usePatch, usePut } from '@/shared/hooks'
 import type { WishlistItem } from '@/shared/api'
-import { toApiError, useGet } from '@/shared/hooks'
 import { formatMoney, parseRubles, rublesToKopecks } from '@/shared/lib'
 import { AddWishlistItemForm } from './AddWishlistItemForm'
 import styles from './WishlistModal.module.scss'
@@ -37,14 +36,21 @@ export function WishlistModal({ roomCode, meId, comment, onClose }: WishlistModa
   const { data, error: loadError, loading, get } = useGet<WishlistItem[]>(base)
   const [adding, setAdding] = useState(false)
   const [edit, setEdit] = useState<EditState | null>(null)
+  const { put, loading: commentBusy } = usePut<{ comment: string | null }, void>(
+    `/rooms/${roomCode}/me/wishlist-comment`,
+  )
+  // Path стабилен на время формы правки: пока edit не открыт, он пустой и
+  // никуда не вызывается.
+  const { patch, loading: saving } = usePatch<{ title: string; price: number | null }, void>(
+    `${base}/items/${edit?.id ?? ''}`,
+  )
+  const { del, loading: deleting } = useDelete()
   const [editError, setEditError] = useState<string | null>(null)
-  const [busyId, setBusyId] = useState<string | null>(null)
   const toast = useToast()
 
   // Комментарий для дарящего: черновик поверх сохранённого значения.
   const [commentDraft, setCommentDraft] = useState<string | null>(null)
   const [commentSaved, setCommentSaved] = useState<string | null>(null)
-  const [commentBusy, setCommentBusy] = useState(false)
   const savedComment = commentSaved ?? (comment ?? '')
   const commentValue = commentDraft ?? savedComment
   const commentDirty = commentValue !== savedComment
@@ -65,19 +71,17 @@ export function WishlistModal({ roomCode, meId, comment, onClose }: WishlistModa
     closeForms()
     onClose()
   }
+
   async function handleDelete(item: WishlistItem) {
-    setBusyId(item.id)
-    try {
-      await api.delete(`${base}/items/${item.id}`)
+    const result = await del(`${base}/items/${item.id}`)
+    if (result.ok) {
       void get()
-    } catch (cause) {
-      toast.error(toApiError(cause).message)
-    } finally {
-      setBusyId(null)
+    } else {
+      toast.error(result.error.message)
     }
   }
 
-  async function handleEditSave(item: WishlistItem) {
+  async function handleEditSave() {
     const title = edit?.title.trim() ?? ''
     if (title === '') {
       setEditError('Название не может быть пустым')
@@ -92,18 +96,12 @@ export function WishlistModal({ roomCode, meId, comment, onClose }: WishlistModa
       }
       priceKopecks = rublesToKopecks(rubles)
     }
-    setBusyId(item.id)
-    try {
-      await api.patch(`${base}/items/${item.id}`, {
-        title,
-        price: priceKopecks ?? null,
-      })
+    const result = await patch({ title, price: priceKopecks ?? null })
+    if (result.ok) {
       void get()
       closeForms()
-    } catch (cause) {
-      toast.error(toApiError(cause).message)
-    } finally {
-      setBusyId(null)
+    } else {
+      toast.error(result.error.message)
     }
   }
 
@@ -118,18 +116,13 @@ export function WishlistModal({ roomCode, meId, comment, onClose }: WishlistModa
 
   async function handleCommentSave() {
     const text = commentValue.trim()
-    setCommentBusy(true)
-    try {
-      await api.put(`/rooms/${roomCode}/me/wishlist-comment`, {
-        comment: text === '' ? null : text,
-      })
+    const result = await put({ comment: text === '' ? null : text })
+    if (result.ok) {
       setCommentSaved(text)
       setCommentDraft(null)
       toast.success('Комментарий сохранён — его увидит твой дарильщик')
-    } catch (cause) {
-      toast.error(toApiError(cause).message)
-    } finally {
-      setCommentBusy(false)
+    } else {
+      toast.error(result.error.message)
     }
   }
 
@@ -185,7 +178,7 @@ export function WishlistModal({ roomCode, meId, comment, onClose }: WishlistModa
                 />
                 {editError != null && <p className={styles.editError}>{editError}</p>}
                 <div className={styles.editButtons}>
-                  <Button size="m" loading={busyId === item.id} onClick={() => void handleEditSave(item)}>
+                  <Button size="m" loading={saving} onClick={() => void handleEditSave()}>
                     Сохранить
                   </Button>
                   <Button variant="ghost" size="m" onClick={closeForms}>
@@ -212,6 +205,7 @@ export function WishlistModal({ roomCode, meId, comment, onClose }: WishlistModa
                     type="button"
                     className={styles.mini}
                     onClick={() => startEdit(item)}
+                    disabled={deleting}
                     aria-label="Изменить товар"
                   >
                     <PencilIcon size={15} />
@@ -220,7 +214,7 @@ export function WishlistModal({ roomCode, meId, comment, onClose }: WishlistModa
                     type="button"
                     className={styles.mini}
                     onClick={() => void handleDelete(item)}
-                    disabled={busyId === item.id}
+                    disabled={deleting}
                     aria-label="Удалить товар"
                   >
                     <XIcon size={15} />

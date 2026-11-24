@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import { Button, Field, Input, useToast } from '@/shared/ui'
-import { api } from '@/shared/api'
 import type { AddWishlistItemRequest, WishlistItem } from '@/shared/api'
-import { toApiError } from '@/shared/hooks'
+import { usePost } from '@/shared/hooks'
 import { parseRubles, rublesToKopecks } from '@/shared/lib'
 import styles from './AddWishlistItemForm.module.scss'
 
@@ -23,7 +22,9 @@ export function AddWishlistItemForm({ roomCode, onAdded, onCancel }: AddWishlist
   const [price, setPrice] = useState('')
   const [url, setUrl] = useState('')
   const [errors, setErrors] = useState<FieldErrors>({})
-  const [adding, setAdding] = useState(false)
+  const { post, loading: adding } = usePost<AddWishlistItemRequest, WishlistItem>(
+    `/rooms/${roomCode}/wishlist/items`,
+  )
   const toast = useToast()
 
   async function add() {
@@ -53,15 +54,12 @@ export function AddWishlistItemForm({ roomCode, onAdded, onCancel }: AddWishlist
     if (trimmedUrl !== '') body.url = trimmedUrl
     if (priceKopecks != null) body.price = priceKopecks
 
-    setAdding(true)
     setErrors({})
-    try {
-      const item = await api.post<WishlistItem>(`/rooms/${roomCode}/wishlist/items`, body)
-      onAdded(item)
-    } catch (cause) {
-      toast.error(toApiError(cause).message)
-    } finally {
-      setAdding(false)
+    const result = await post(body)
+    if (result.ok) {
+      onAdded(result.data)
+    } else {
+      toast.error(result.error.message)
     }
   }
 
