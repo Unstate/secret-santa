@@ -18,7 +18,7 @@
   [RELEASING.md](docs/RELEASING.md) (выпуск версий),
   [TODO.md](docs/TODO.md) (что осталось), [BUGS.md](docs/BUGS.md) (грабли)
 - `docker-compose.yml` — дев-Postgres; `docker-compose.prod.yml` — прод
-  (frontend-Caddy с авто-HTTPS + backend + Postgres, без автозапуска при перезагрузке)
+  (frontend-Caddy с авто-HTTPS + backend + Postgres, автозапуск после перезагрузки)
 - `.github/workflows/` — CI (fmt/clippy/test) и авто-деплой из master
 - `scripts/dev-seed.sh` — тестовая комната с токенами для разработки фронта
 - `.env.example` — шаблон переменных окружения (реальный `.env` в git не ходит)

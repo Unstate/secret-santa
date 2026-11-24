@@ -1,8 +1,8 @@
 services:
   frontend:
-    image: ghcr.io/OWNER/REPO-frontend:latest
+    image: ghcr.io/unstate/secret-santa-frontend:latest
     build: ./frontend
-    restart: "no"
+    restart: unless-stopped
     environment:
       DOMAIN: ${DOMAIN:-localhost}
     ports:
@@ -17,9 +17,9 @@ services:
         condition: service_healthy
 
   backend:
-    image: ghcr.io/OWNER/REPO-backend:latest
+    image: ghcr.io/unstate/secret-santa-backend:latest
     build: ./backend
-    restart: "no"
+    restart: unless-stopped
     environment:
       DATABASE_URL: postgres://santa:${DB_PASSWORD:-santa}@db:5432/santa
       PORT: "8080"
@@ -30,7 +30,7 @@ services:
 
   db:
     image: postgres:17-alpine
-    restart: "no"
+    restart: unless-stopped
     environment:
       POSTGRES_USER: santa
       POSTGRES_PASSWORD: ${DB_PASSWORD:-santa}
