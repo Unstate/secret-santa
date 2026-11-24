@@ -7,7 +7,8 @@ import {
   PlusIcon,
   Spinner,
   Textarea,
-  XIcon,
+  TrashIcon,
+  TreeIcon,
   useToast,
 } from '@/shared/ui'
 import { useDelete, useGet, usePatch, usePut } from '@/shared/hooks'
@@ -156,7 +157,10 @@ export function WishlistModal({ roomCode, meId, comment, onClose }: WishlistModa
       )}
 
       {data != null && edit == null && !adding && myItems.length === 0 && (
-        <p className={styles.empty}>Пока пусто. Добавь пару идей — дарильщику будет проще.</p>
+        <p className={styles.empty}>
+          <TreeIcon size={16} />
+          Пока пусто. Добавь пару идей — дарильщику будет проще.
+        </p>
       )}
 
       {myItems.length > 0 && (
@@ -217,7 +221,7 @@ export function WishlistModal({ roomCode, meId, comment, onClose }: WishlistModa
                     disabled={deleting}
                     aria-label="Удалить товар"
                   >
-                    <XIcon size={15} />
+                    <TrashIcon size={15} />
                   </button>
                 </span>
               </li>

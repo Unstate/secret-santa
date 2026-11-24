@@ -171,3 +171,91 @@ export function ListIcon({ size = 20, className }: IconProps) {
     </svg>
   )
 }
+
+export function TrashIcon({ size = 20, className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" width={size} height={size} className={className} fill="none" aria-hidden="true">
+      <path d="M4.5 6.5h15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <path
+        d="M9.5 6V4.8a1.3 1.3 0 0 1 1.3-1.3h2.4a1.3 1.3 0 0 1 1.3 1.3V6"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+      <path
+        d="M6.5 6.5l.7 11.6a2 2 0 0 0 2 1.9h5.6a2 2 0 0 0 2-1.9l.7-11.6"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinejoin="round"
+      />
+      <path d="M10 10.5v5.5M14 10.5v5.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+export function UsersIcon({ size = 20, className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" width={size} height={size} className={className} fill="none" aria-hidden="true">
+      <circle cx="9" cy="8" r="3.5" stroke="currentColor" strokeWidth="2" />
+      <path d="M3.5 19.5c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <path d="M15.5 5a3.5 3.5 0 0 1 0 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <path d="M17.5 14.9c1.7.8 2.7 2.4 3 4.6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+export function TreeIcon({ size = 20, className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" width={size} height={size} className={className} fill="none" aria-hidden="true">
+      <path
+        d="M12 3.5 8.4 9.5h2L7.2 14.5h2.4l-2.6 5h10l-2.6-5h2.4l-3.2-5h2L12 3.5Z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinejoin="round"
+      />
+      <path d="M12 19.5v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+export function SparklesIcon({ size = 20, className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" width={size} height={size} className={className} fill="none" aria-hidden="true">
+      <path
+        d="M12 4.5l1.7 4.3 4.3 1.7-4.3 1.7L12 16.5l-1.7-4.3L6 10.5l4.3-1.7L12 4.5Z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinejoin="round"
+      />
+      <g stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+        <path d="M18.5 15.5v3.5M16.75 17.25h3.5" />
+        <path d="M5.5 16.5v3M4 18h3" />
+      </g>
+    </svg>
+  )
+}
+
+export function LinkIcon({ size = 20, className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" width={size} height={size} className={className} fill="none" aria-hidden="true">
+      <g stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M10.5 13.5a4 4 0 0 0 6 .4l2.4-2.4a4 4 0 1 0-5.6-5.6l-1.4 1.3" />
+        <path d="M13.5 10.5a4 4 0 0 0-6-.4l-2.4 2.4a4 4 0 1 0 5.6 5.6l1.4-1.3" />
+      </g>
+    </svg>
+  )
+}
+
+export function CheckIcon({ size = 20, className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" width={size} height={size} className={className} fill="none" aria-hidden="true">
+      <path
+        d="M5 12.5l4.2 4.2L18.8 7.3"
+        stroke="currentColor"
+        strokeWidth="2.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}

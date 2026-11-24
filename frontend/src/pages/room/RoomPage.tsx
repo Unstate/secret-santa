@@ -31,6 +31,7 @@ import {
   Snowdrift,
   Spinner,
   ThemeToggle,
+  UsersIcon,
   useToast,
 } from '@/shared/ui'
 import styles from './RoomPage.module.scss'
@@ -155,7 +156,10 @@ export function RoomPage() {
 
           <Card>
             <div className={styles.playersHead}>
-              <h2 className={styles.cardTitle}>Игроки · {details.players.length}</h2>
+              <h2 className={styles.cardTitle}>
+                <UsersIcon size={18} />
+                Игроки · {details.players.length}
+              </h2>
               <Button variant="soft" size="m" icon={<CopyIcon size={16} />} onClick={copyInvite}>
                 Ссылка
               </Button>

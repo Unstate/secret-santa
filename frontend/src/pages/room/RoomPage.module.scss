@@ -135,6 +135,9 @@
 }
 
 .cardTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   font-family: var(--font-display);
   font-size: 20px;
   font-weight: 700;
