@@ -14,8 +14,8 @@ use crate::{
     ws::RoomEvent,
 };
 
-/// Каталог милых животных на фронте: id от 0 до 31.
-const MAX_AVATAR_ID: i16 = 31;
+/// Каталог милых животных на фронте: id от 0 до 47 (32–47 — OpenMoji).
+const MAX_AVATAR_ID: i16 = 47;
 
 fn validate_name(name: &str, max_chars: usize) -> Result<String, ApiError> {
     let name = name.trim();
