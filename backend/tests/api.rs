@@ -90,7 +90,7 @@ async fn full_room_lifecycle() {
     let code = room["room"]["code"].as_str().unwrap().to_string();
     let organizer = token_of(&room);
 
-    // Два игрока заходят по коду.
+    // Три игрока заходят по коду.
     let (_, anya) = call(
         &app,
         "POST",
@@ -109,6 +109,15 @@ async fn full_room_lifecycle() {
     )
     .await;
     let borya = token_of(&borya);
+    let (_, gosha) = call(
+        &app,
+        "POST",
+        &format!("/api/v1/rooms/{code}/join"),
+        None,
+        Some(json!({"name": "Гоша", "avatar": 20})),
+    )
+    .await;
+    let gosha = token_of(&gosha);
 
     // Дубликат имени и чужой токен.
     let (status, _) = call(
@@ -141,7 +150,7 @@ async fn full_room_lifecycle() {
     )
     .await;
     assert_eq!(status, StatusCode::OK);
-    assert_eq!(details["players"].as_array().unwrap().len(), 3);
+    assert_eq!(details["players"].as_array().unwrap().len(), 4);
     let player_id = |name: &str| {
         details["players"]
             .as_array()
@@ -153,9 +162,15 @@ async fn full_room_lifecycle() {
             .unwrap()
             .to_string()
     };
-    let (anya_id, borya_id) = (player_id("Аня"), player_id("Боря"));
+    let (anya_id, borya_id, gosha_id, olya_id) = (
+        player_id("Аня"),
+        player_id("Боря"),
+        player_id("Гоша"),
+        player_id("Оля"),
+    );
 
-    // Взаимные блокировки двух из трёх — неразрешимы, ловим на вводе.
+    // «Аня не дарит никому»: исключения взаимны, у Ани не осталось получателей
+    // — неразрешимо, ловим на вводе.
     let (status, error) = call(
         &app,
         "PUT",
@@ -164,6 +179,10 @@ async fn full_room_lifecycle() {
         Some(json!({"exclusions": [
             {"playerId": anya_id, "blockedRecipientId": borya_id},
             {"playerId": borya_id, "blockedRecipientId": anya_id},
+            {"playerId": anya_id, "blockedRecipientId": gosha_id},
+            {"playerId": gosha_id, "blockedRecipientId": anya_id},
+            {"playerId": anya_id, "blockedRecipientId": olya_id},
+            {"playerId": olya_id, "blockedRecipientId": anya_id},
         ]})),
     )
     .await;
@@ -230,9 +249,9 @@ async fn full_room_lifecycle() {
         assert_eq!(status, StatusCode::NO_CONTENT);
     }
 
-    // У каждого свой получатель, все получатели разные, исключение соблюдено.
+    // У каждого свой получатель, все получатели разные, исключение взаимно.
     let mut recipients = Vec::new();
-    for token in [&organizer, &anya, &borya] {
+    for token in [&organizer, &anya, &borya, &gosha] {
         let (status, assignment) = call(
             &app,
             "GET",
@@ -249,11 +268,17 @@ async fn full_room_lifecycle() {
         if token == &anya {
             assert_ne!(recipient, "Боря", "исключение Аня→Боря нарушено");
         }
+        if token == &borya {
+            assert_ne!(
+                recipient, "Аня",
+                "исключение взаимно: Боря→Аня тоже запрещено"
+            );
+        }
         recipients.push(recipient);
     }
     recipients.sort();
     recipients.dedup();
-    assert_eq!(recipients.len(), 3, "каждый выпадает ровно один раз");
+    assert_eq!(recipients.len(), 4, "каждый выпадает ровно один раз");
 
     // Ресафл доступен даже после того, как кто-то открыл свой результат.
     let (status, _) = call(
@@ -276,7 +301,7 @@ async fn full_room_lifecycle() {
     )
     .await;
     assert_eq!(status, StatusCode::OK);
-    assert_eq!(pairs.as_array().unwrap().len(), 3);
+    assert_eq!(pairs.as_array().unwrap().len(), 4);
     let (status, _) = call(
         &app,
         "GET",

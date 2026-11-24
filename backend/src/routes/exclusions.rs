@@ -8,7 +8,8 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use crate::{
-    auth::Organizer, db, domain::validate, error::ApiError, state::AppState, ws::RoomEvent,
+    auth::Organizer, db, domain::shuffle::mutual_blocked, domain::validate, error::ApiError,
+    state::AppState, ws::RoomEvent,
 };
 
 #[derive(Debug, Deserialize)]
@@ -94,9 +95,12 @@ pub async fn put_exclusions(
     }
 
     let names: Vec<&str> = players.iter().map(|player| player.name.as_str()).collect();
-    if !validate::perfect_matching_exists(players.len(), &blocked) {
+    // Исключения взаимны (см. domain::shuffle) — feasibility проверяем на
+    // симметричном множестве, иначе примем набор, который потом не соберётся.
+    let mutual = mutual_blocked(&blocked);
+    if !validate::perfect_matching_exists(players.len(), &mutual) {
         return Err(ApiError::ShuffleImpossible(
-            validate::impossibility_reasons(&names, &blocked),
+            validate::impossibility_reasons(&names, &mutual),
         ));
     }
 

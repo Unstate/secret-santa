@@ -35,20 +35,32 @@ pub fn shuffle(
         )]));
     }
 
-    if !validate::perfect_matching_exists(n, blocked) {
+    // Исключения взаимны: «Рома не дарит Юре» означает и «Юра не дарит Роме».
+    let blocked = mutual_blocked(blocked);
+
+    if !validate::perfect_matching_exists(n, &blocked) {
         return Err(ShuffleError::Impossible(validate::impossibility_reasons(
-            names, blocked,
+            names, &blocked,
         )));
     }
 
     for _ in 0..32 {
-        if let Some(assignment) = randomized_backtracking(n, blocked, rng) {
-            debug_assert!(validate::validate_assignment(n, blocked, &assignment));
+        if let Some(assignment) = randomized_backtracking(n, &blocked, rng) {
+            debug_assert!(validate::validate_assignment(n, &blocked, &assignment));
             return Ok(assignment);
         }
     }
 
-    validate::find_matching(n, blocked).ok_or(ShuffleError::GenerationFailed)
+    validate::find_matching(n, &blocked).ok_or(ShuffleError::GenerationFailed)
+}
+
+/// Направленное исключение (giver, recipient) запрещает дарение в обе стороны.
+pub fn mutual_blocked(blocked: &BTreeSet<(usize, usize)>) -> BTreeSet<(usize, usize)> {
+    blocked
+        .iter()
+        .flat_map(|&(giver, recipient)| [(giver, recipient), (recipient, giver)])
+        .filter(|&(giver, recipient)| giver != recipient)
+        .collect()
 }
 
 fn randomized_backtracking(
@@ -186,13 +198,54 @@ mod tests {
     }
 
     #[test]
-    fn forced_exclusions_give_the_only_answer() {
-        let blocked: BTreeSet<(usize, usize)> = BTreeSet::from([(0, 1), (1, 2), (2, 0)]);
+    fn exclusion_is_mutual_in_result() {
+        // Задано только «игрок2 не дарит игроку4», но и игрок4 не должен
+        // достаться игроку2 в пары.
+        for seed in 0..30u64 {
+            let owned = make_names(6);
+            let names = str_names(&owned);
+            let blocked: BTreeSet<(usize, usize)> = BTreeSet::from([(2, 4)]);
+            let mut r = rng(seed);
+            let assignment = shuffle(&names, &blocked, &mut r).unwrap();
+            assert_ne!(assignment[2], 4);
+            assert_ne!(assignment[4], 2);
+        }
+    }
+
+    #[test]
+    fn one_way_block_of_two_of_three_is_impossible() {
+        // «Аня не дарит Боре» взаимно: теперь и Аня, и Боря могут дарить
+        // только Вере — два дарителя на одного получателя.
+        let blocked: BTreeSet<(usize, usize)> = BTreeSet::from([(0, 1)]);
+        let mut r = rng(3);
+        assert!(matches!(
+            shuffle(&["Аня", "Боря", "Вера"], &blocked, &mut r),
+            Err(ShuffleError::Impossible(_))
+        ));
+    }
+
+    #[test]
+    fn one_way_blocks_leave_the_only_answer() {
+        // Каждое исключение взаимно сужает выбор до единственной комплектации:
+        // Аня→Вера, Боря→Гоша, Вера→Аня, Гоша→Боря.
+        let blocked: BTreeSet<(usize, usize)> = BTreeSet::from([(0, 1), (1, 2), (2, 3), (3, 0)]);
         let mut r = rng(3);
         assert_eq!(
-            shuffle(&["Аня", "Боря", "Вера"], &blocked, &mut r).unwrap(),
-            vec![2, 0, 1]
+            shuffle(&["Аня", "Боря", "Вера", "Гоша"], &blocked, &mut r).unwrap(),
+            vec![2, 3, 0, 1]
         );
+    }
+
+    #[test]
+    fn directed_cycle_of_three_is_impossible_for_three_players() {
+        // (0,1),(1,2),(2,0): во взаимной трактовке каждый заблокирован
+        // с обоими — пары не собираются вовсе.
+        let blocked: BTreeSet<(usize, usize)> = BTreeSet::from([(0, 1), (1, 2), (2, 0)]);
+        let mut r = rng(3);
+        assert!(matches!(
+            shuffle(&["Аня", "Боря", "Вера"], &blocked, &mut r),
+            Err(ShuffleError::Impossible(_))
+        ));
     }
 
     proptest! {
@@ -213,6 +266,11 @@ mod tests {
                 return Ok(());
             };
             prop_assert!(validate::validate_assignment(n, &blocked, &assignment));
+            // Взаимность: заданное исключение не работает ни в одну сторону.
+            for &(giver, recipient) in &blocked {
+                prop_assert_ne!(assignment[giver], recipient);
+                prop_assert_ne!(assignment[recipient], giver);
+            }
         }
     }
 }
