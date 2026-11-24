@@ -90,8 +90,9 @@
   --shadow-pop: 0 4px 10px rgba(3, 8, 16, 0.4), 0 20px 48px rgba(3, 8, 16, 0.55);
   --focus-ring: 0 0 0 3px rgba(122, 165, 232, 0.4);
 
-  --snow: rgba(210, 226, 250, 0.5);
-  --snow-drift: #1c2a44;
+  // Снег в ночи: хлопки и сугробы — белые, без полупрозрачности
+  --snow: #ffffff;
+  --snow-drift: #f2f7ff;
 
   color-scheme: dark;
 }
