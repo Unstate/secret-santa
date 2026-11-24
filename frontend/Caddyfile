@@ -6,6 +6,8 @@ www.{$DOMAIN:localhost} {
 	root * /srv
 	encode gzip zstd
 
+	header Strict-Transport-Security "max-age=31536000; includeSubDomains"
+
 	@backend path /api/* /healthz
 	handle @backend {
 		reverse_proxy backend:8080
