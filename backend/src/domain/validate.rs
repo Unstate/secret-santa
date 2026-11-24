@@ -110,7 +110,7 @@ mod tests {
             3,
             &BTreeSet::from([(0, 1)]),
             &[1, 2, 0]
-        )); 
+        ));
     }
 
     #[test]

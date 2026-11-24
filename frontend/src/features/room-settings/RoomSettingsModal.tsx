@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { z } from 'zod'
-import { Button, Card, Field, Input, useToast } from '@/shared/ui'
+import { Button, Field, Input, Modal, useToast } from '@/shared/ui'
 import { usePatch } from '@/shared/hooks'
 import { ROOM_NAME_MAX, zodFieldErrors } from '@/shared/lib/validation'
 import { parseRubles, rublesToKopecks } from '@/shared/lib/money'
+import { apiErrorText } from '@/shared/api'
 import type { PatchRoomRequest, Room } from '@/shared/api'
-import styles from './RoomSettingsCard.module.scss'
+import styles from './RoomSettingsModal.module.scss'
 
 const settingsSchema = z.object({
   name: z.string().trim().min(1, 'Введите название комнаты'),
@@ -21,12 +22,14 @@ interface FormState {
   budget: string
 }
 
-interface RoomSettingsCardProps {
+interface RoomSettingsModalProps {
   room: Room
+  onClose: () => void
   onSaved: () => void
 }
 
-export function RoomSettingsCard({ room, onSaved }: RoomSettingsCardProps) {
+export function RoomSettingsModal({ room, onClose, onSaved }: RoomSettingsModalProps) {
+  // Попап монтируется только при открытии — форма стартует с актуальных значений.
   const [form, setForm] = useState<FormState>({ name: room.name, budget: String(room.budget / 100) })
   const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({})
   const { patch, loading } = usePatch<PatchRoomRequest, Room>(`/rooms/${room.code}`)
@@ -47,14 +50,14 @@ export function RoomSettingsCard({ room, onSaved }: RoomSettingsCardProps) {
     if (result.ok) {
       toast.success('Настройки сохранены')
       onSaved()
+      onClose()
     } else {
-      toast.error(result.error.message)
+      toast.error(apiErrorText(result.error))
     }
   }
 
   return (
-    <Card className={styles.card}>
-      <h2 className={styles.title}>Настройки комнаты</h2>
+    <Modal onClose={onClose} title="Настройки комнаты">
       <form className={styles.form} onSubmit={handleSubmit} noValidate>
         <Field label="Название комнаты" error={errors.name}>
           <Input
@@ -76,6 +79,6 @@ export function RoomSettingsCard({ room, onSaved }: RoomSettingsCardProps) {
           Сохранить
         </Button>
       </form>
-    </Card>
+    </Modal>
   )
 }

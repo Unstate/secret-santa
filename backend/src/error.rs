@@ -21,8 +21,6 @@ pub enum ApiError {
     Unauthorized,
     #[error("недопустимый статус комнаты")]
     WrongStatus,
-    #[error("повторный шафл недоступен: результаты уже кто-то видел")]
-    ReshuffleBlocked,
     #[error("шафл невозможен с такими исключениями")]
     ShuffleImpossible(Vec<String>),
     #[error("получатель ещё не определён — шафл не проводился")]
@@ -60,7 +58,6 @@ impl IntoResponse for ApiError {
             Forbidden => (StatusCode::FORBIDDEN, "forbidden"),
             Unauthorized => (StatusCode::UNAUTHORIZED, "unauthorized"),
             WrongStatus => (StatusCode::CONFLICT, "wrong_status"),
-            ReshuffleBlocked => (StatusCode::CONFLICT, "reshuffle_blocked"),
             ShuffleImpossible(_) => (StatusCode::UNPROCESSABLE_ENTITY, "shuffle_impossible"),
             ShuffleNotReady => (StatusCode::CONFLICT, "shuffle_not_ready"),
             Validation(_) => (StatusCode::UNPROCESSABLE_ENTITY, "validation_failed"),

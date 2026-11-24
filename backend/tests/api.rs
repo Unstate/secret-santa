@@ -13,7 +13,7 @@ use futures_util::StreamExt;
 use serde_json::{Value, json};
 use tower::ServiceExt;
 
-use backend::{build_router, parser::ParserRegistry, state::AppState, ws::EventHub};
+use backend::{build_router, state::AppState, ws::EventHub};
 
 type TestApp = axum::Router;
 
@@ -35,7 +35,6 @@ async fn setup() -> Option<TestApp> {
     Some(build_router(AppState {
         db: pool,
         events: EventHub::default(),
-        parsers: ParserRegistry::new(),
     }))
 }
 
@@ -183,6 +182,30 @@ async fn full_room_lifecycle() {
     assert_eq!(status, StatusCode::OK, "{saved}");
     assert_eq!(saved.as_array().unwrap().len(), 1);
 
+    // Текущие пары читает организатор, игроку — forbidden.
+    let (status, list) = call(
+        &app,
+        "GET",
+        &format!("/api/v1/rooms/{code}/exclusions"),
+        Some(&organizer),
+        None,
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(
+        list,
+        json!([{"playerId": anya_id, "blockedRecipientId": borya_id}])
+    );
+    let (status, _) = call(
+        &app,
+        "GET",
+        &format!("/api/v1/rooms/{code}/exclusions"),
+        Some(&anya),
+        None,
+    )
+    .await;
+    assert_eq!(status, StatusCode::FORBIDDEN);
+
     // Игрок шафлить не может.
     let (status, _) = call(
         &app,
@@ -232,8 +255,8 @@ async fn full_room_lifecycle() {
     recipients.dedup();
     assert_eq!(recipients.len(), 3, "каждый выпадает ровно один раз");
 
-    // Ресафл после открытия запрещён.
-    let (status, error) = call(
+    // Ресафл доступен даже после того, как кто-то открыл свой результат.
+    let (status, _) = call(
         &app,
         "POST",
         &format!("/api/v1/rooms/{code}/shuffle"),
@@ -241,8 +264,7 @@ async fn full_room_lifecycle() {
         None,
     )
     .await;
-    assert_eq!(status, StatusCode::CONFLICT);
-    assert_eq!(error["code"], json!("reshuffle_blocked"));
+    assert_eq!(status, StatusCode::NO_CONTENT);
 
     // Полный порядок — только организатор.
     let (status, pairs) = call(
@@ -264,6 +286,89 @@ async fn full_room_lifecycle() {
     )
     .await;
     assert_eq!(status, StatusCode::FORBIDDEN);
+
+    // Сброс шафла: пары удаляются, комната возвращается в лобби, вход снова
+    // открыт; результат сбрасывается у уже открывших.
+    let (status, _) = call(
+        &app,
+        "POST",
+        &format!("/api/v1/rooms/{code}/reset"),
+        Some(&anya),
+        None,
+    )
+    .await;
+    assert_eq!(status, StatusCode::FORBIDDEN);
+    let (status, _) = call(
+        &app,
+        "POST",
+        &format!("/api/v1/rooms/{code}/reset"),
+        Some(&organizer),
+        None,
+    )
+    .await;
+    assert_eq!(status, StatusCode::NO_CONTENT);
+
+    let (status, room) = call(
+        &app,
+        "GET",
+        &format!("/api/v1/rooms/{code}"),
+        Some(&organizer),
+        None,
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(room["status"], json!("lobby"));
+
+    let (status, error) = call(
+        &app,
+        "GET",
+        &format!("/api/v1/rooms/{code}/me/assignment"),
+        Some(&anya),
+        None,
+    )
+    .await;
+    assert_eq!(status, StatusCode::CONFLICT);
+    assert_eq!(error["code"], json!("shuffle_not_ready"));
+
+    // После сброса можно войти новым и зашафлить заново.
+    let (status, _) = call(
+        &app,
+        "POST",
+        &format!("/api/v1/rooms/{code}/join"),
+        None,
+        Some(json!({"name": "Вера", "avatar": 15})),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    let (status, _) = call(
+        &app,
+        "POST",
+        &format!("/api/v1/rooms/{code}/shuffle"),
+        Some(&organizer),
+        None,
+    )
+    .await;
+    assert_eq!(status, StatusCode::NO_CONTENT);
+
+    // Сброс из свежего шафла работает, а из лобби — уже нет.
+    let (status, _) = call(
+        &app,
+        "POST",
+        &format!("/api/v1/rooms/{code}/reset"),
+        Some(&organizer),
+        None,
+    )
+    .await;
+    assert_eq!(status, StatusCode::NO_CONTENT);
+    let (status, _) = call(
+        &app,
+        "POST",
+        &format!("/api/v1/rooms/{code}/reset"),
+        Some(&organizer),
+        None,
+    )
+    .await;
+    assert_eq!(status, StatusCode::CONFLICT);
 }
 
 #[tokio::test]
@@ -304,24 +409,20 @@ async fn wishlist_crud_and_permissions() {
     )
     .await;
     assert_eq!(status, StatusCode::OK, "{item}");
-    assert_eq!(item["source"], json!("manual"));
     assert_eq!(item["url"], Value::Null);
     let item_id = item["id"].as_str().unwrap().to_string();
 
-    // WB-артикул: даже если card API недоступен (403 по IP), ссылка генерируется.
+    // Ручной товар со ссылкой.
     let (status, item) = call(
         &app,
         "POST",
         &format!("{base}/items"),
         Some(&anya),
-        Some(json!({"source": "wildberries", "code": "198340521", "title": "Носки"})),
+        Some(json!({"title": "Носки", "url": "https://example.com/item"})),
     )
     .await;
     assert_eq!(status, StatusCode::OK, "{item}");
-    assert_eq!(
-        item["url"],
-        json!("https://www.wildberries.ru/catalog/198340521/detail.aspx")
-    );
+    assert_eq!(item["url"], json!("https://example.com/item"));
 
     // Чужой PATCH запрещён, свой работает.
     let (status, _) = call(
@@ -357,6 +458,162 @@ async fn wishlist_crud_and_permissions() {
     let (status, list) = call(&app, "GET", &base, Some(&organizer), None).await;
     assert_eq!(status, StatusCode::OK);
     assert_eq!(list.as_array().unwrap().len(), 1);
+}
+
+#[tokio::test]
+async fn wishlist_comment_visible_to_giver() {
+    let Some(app) = setup().await else { return };
+
+    let (_, room) = call(&app, "POST", "/api/v1/rooms", None,
+        Some(json!({"name": "Комната комментария", "budget": 100000, "organizerName": "Оля", "avatar": 2}))).await;
+    let code = room["room"]["code"].as_str().unwrap().to_string();
+    let organizer = token_of(&room);
+    let (_, anya) = call(
+        &app,
+        "POST",
+        &format!("/api/v1/rooms/{code}/join"),
+        None,
+        Some(json!({"name": "Аня", "avatar": 7})),
+    )
+    .await;
+    let anya = token_of(&anya);
+    let (_, borya) = call(
+        &app,
+        "POST",
+        &format!("/api/v1/rooms/{code}/join"),
+        None,
+        Some(json!({"name": "Боря", "avatar": 12})),
+    )
+    .await;
+    let borya = token_of(&borya);
+
+    let comment_url = format!("/api/v1/rooms/{code}/me/wishlist-comment");
+    let anya_comment = |app: &TestApp, body: Option<Value>| {
+        let app = app.clone();
+        let anya = anya.clone();
+        let comment_url = comment_url.clone();
+        async move { call(&app, "PUT", &comment_url, Some(&anya), body).await }
+    };
+
+    // Без токена — не поставить.
+    let (status, error) = call(
+        &app,
+        "PUT",
+        &comment_url,
+        None,
+        Some(json!({"comment": "привет"})),
+    )
+    .await;
+    assert_eq!(status, StatusCode::UNAUTHORIZED);
+    assert_eq!(error["code"], json!("unauthorized"));
+
+    // Ставит владелец, обрезка пробелов на сервере.
+    let (status, _) = anya_comment(&app, Some(json!({"comment": "  Кружку хочу точно  "}))).await;
+    assert_eq!(status, StatusCode::NO_CONTENT);
+    let (_, details) = call(
+        &app,
+        "GET",
+        &format!("/api/v1/rooms/{code}"),
+        Some(&borya),
+        None,
+    )
+    .await;
+    let comment_of = |details: &Value, name: &str| {
+        details["players"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|player| player["name"] == json!(name))
+            .unwrap()["wishlistComment"]
+            .clone()
+    };
+    assert_eq!(comment_of(&details, "Аня"), json!("Кружку хочу точно"));
+
+    // Пустая строка удаляет комментарий.
+    let (status, _) = anya_comment(&app, Some(json!({"comment": "   "}))).await;
+    assert_eq!(status, StatusCode::NO_CONTENT);
+    let (_, details) = call(
+        &app,
+        "GET",
+        &format!("/api/v1/rooms/{code}"),
+        Some(&anya),
+        None,
+    )
+    .await;
+    assert_eq!(comment_of(&details, "Аня"), Value::Null);
+
+    // Слишком длинный — 422.
+    let (status, error) = anya_comment(&app, Some(json!({"comment": "ё".repeat(501)}))).await;
+    assert_eq!(status, StatusCode::UNPROCESSABLE_ENTITY);
+    assert_eq!(error["code"], json!("validation_failed"));
+
+    // После шафла комментарий видит именно дарящий Ани.
+    let (status, _) = anya_comment(&app, Some(json!({"comment": "Кружку хочу точно"}))).await;
+    assert_eq!(status, StatusCode::NO_CONTENT);
+    let (status, _) = call(
+        &app,
+        "POST",
+        &format!("/api/v1/rooms/{code}/shuffle"),
+        Some(&organizer),
+        None,
+    )
+    .await;
+    assert_eq!(status, StatusCode::NO_CONTENT);
+
+    let (_, details) = call(
+        &app,
+        "GET",
+        &format!("/api/v1/rooms/{code}"),
+        Some(&organizer),
+        None,
+    )
+    .await;
+    let id_of = |name: &str| {
+        details["players"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|player| player["name"] == json!(name))
+            .unwrap()["id"]
+            .as_str()
+            .unwrap()
+            .to_string()
+    };
+    let (anya_id, organizer_id) = (id_of("Аня"), id_of("Оля"));
+    let (status, pairs) = call(
+        &app,
+        "GET",
+        &format!("/api/v1/rooms/{code}/assignments"),
+        Some(&organizer),
+        None,
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    let giver_id = pairs
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|pair| pair["recipient"]["id"] == json!(anya_id))
+        .unwrap()["giver"]["id"]
+        .as_str()
+        .unwrap()
+        .to_string();
+    let giver_token = match giver_id.as_str() {
+        id if id == organizer_id => organizer.clone(),
+        id if id == anya_id => anya.clone(),
+        _ => borya.clone(),
+    };
+    let (status, assignment) = call(
+        &app,
+        "GET",
+        &format!("/api/v1/rooms/{code}/me/assignment"),
+        Some(&giver_token),
+        None,
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(assignment["recipient"]["name"], json!("Аня"));
+    assert_eq!(assignment["comment"], json!("Кружку хочу точно"));
 }
 
 #[tokio::test]

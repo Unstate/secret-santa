@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router'
 import { z } from 'zod'
 import { ArrowRightIcon, Button, Card, Field, HashIcon, Input, useToast } from '@/shared/ui'
 import { usePost } from '@/shared/hooks'
-import { readSessionToken, saveSessionToken } from '@/shared/api'
+import { apiErrorText, readSessionToken, saveSessionToken } from '@/shared/api'
 import { normalizeRoomCode } from '@/shared/lib/validation'
 import type { JoinRequest, JoinResponse } from '@/shared/api'
 import { loadPlayerProfile } from '@/features/player-profile/profile'
@@ -45,7 +45,7 @@ export function JoinRoomForm() {
       saveSessionToken(normalized, result.data.player.token)
       navigate(`/room/${normalized}`)
     } else {
-      toast.error(result.error.message)
+      toast.error(apiErrorText(result.error))
     }
   }
 

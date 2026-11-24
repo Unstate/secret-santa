@@ -27,12 +27,10 @@ pub async fn shuffle(
     if organizer.room_id != room.id {
         return Err(ApiError::Forbidden);
     }
-    let any_viewed = db::assignments::any_viewed(&state.db, room.id).await?;
+    // Ресафл разрешён всегда: у кого открылся старый результат, тот при
+    // следующем чтении увидит нового получателя (виде «живых» данных).
     match room.status.as_str() {
-        "lobby" => {}
-        "shuffled" if !any_viewed => {}
-        // Открыли результаты после прошлого шафла — пересобирать нельзя.
-        "shuffled" => return Err(ApiError::ReshuffleBlocked),
+        "lobby" | "shuffled" => {}
         _ => return Err(ApiError::WrongStatus),
     }
 
@@ -76,6 +74,32 @@ pub async fn shuffle(
     Ok(StatusCode::NO_CONTENT)
 }
 
+// Сброс шафла: пары удаляются, комната возвращается в лобби. Вишлисты и
+// исключения остаются на месте, вход по ссылке снова открыт.
+pub async fn reset(
+    State(state): State<AppState>,
+    Path(code): Path<String>,
+    organizer: Organizer,
+) -> Result<StatusCode, ApiError> {
+    let room = db::rooms::find_by_code(&state.db, &code)
+        .await?
+        .ok_or(ApiError::RoomNotFound)?;
+    if organizer.room_id != room.id {
+        return Err(ApiError::Forbidden);
+    }
+    if room.status != "shuffled" {
+        return Err(ApiError::WrongStatus);
+    }
+
+    let mut tx = state.db.begin().await?;
+    db::assignments::replace_all(&mut tx, room.id, &[]).await?;
+    db::rooms::set_status(&mut *tx, room.id, "lobby").await?;
+    tx.commit().await?;
+
+    state.events.publish(&room.code, RoomEvent::RoomReset);
+    Ok(StatusCode::NO_CONTENT)
+}
+
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RecipientDto {
@@ -84,10 +108,10 @@ pub struct RecipientDto {
     avatar: i16,
 }
 
-fn to_dto(player: db::players::Player) -> RecipientDto {
+fn to_dto(player: &db::players::Player) -> RecipientDto {
     RecipientDto {
         id: player.id,
-        name: player.name,
+        name: player.name.clone(),
         avatar: player.avatar,
     }
 }
@@ -96,6 +120,8 @@ fn to_dto(player: db::players::Player) -> RecipientDto {
 #[serde(rename_all = "camelCase")]
 pub struct MyAssignmentResponse {
     recipient: RecipientDto,
+    /// Комментарий получателя к своему вишлисту.
+    comment: Option<String>,
     wishlist: Vec<db::wishlist::WishlistItem>,
 }
 
@@ -114,11 +140,11 @@ pub async fn my_assignment(
     let recipient = db::assignments::find_recipient_of(&state.db, player.id)
         .await?
         .ok_or(ApiError::ShuffleNotReady)?;
-    db::assignments::mark_viewed(&state.db, player.id).await?;
     let wishlist = db::wishlist::list_by_player(&state.db, recipient.id).await?;
 
     Ok(Json(MyAssignmentResponse {
-        recipient: to_dto(recipient),
+        recipient: to_dto(&recipient),
+        comment: recipient.wishlist_comment,
         wishlist,
     }))
 }
@@ -158,11 +184,10 @@ pub async fn all_assignments(
             ApiError::Internal(anyhow::anyhow!("в парах шафла нет игрока {recipient_id}"))
         })?;
         result.push(AssignmentPair {
-            giver: to_dto(giver.clone()),
-            recipient: to_dto(recipient.clone()),
+            giver: to_dto(giver),
+            recipient: to_dto(recipient),
         });
     }
 
-    db::assignments::mark_all_viewed(&state.db, room.id).await?;
     Ok(Json(result))
 }

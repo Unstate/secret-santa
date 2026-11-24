@@ -5,6 +5,26 @@
 
 ## Фронтенд / сборка
 
+### oxlint set-state-in-effect в попапах с «сбросом при открытии» (16.11)
+- **Симптом:** `setState` внутри `useEffect(() => { if (open) … })` — линтер
+  ругается, React Compiler пропускает компонент.
+- **Причина:** сброс состояния по флагу `open` — эффект-костыль; правильный
+  триггер «начать заново» — монтаж.
+- **Решение:** попапы (`features/*Modal`) монтируются только когда открыты
+  (`activeModal === 'x' && <Modal/>`), состояние стартует чистым само;
+  в `Modal` оверлей/Esc-эффект живут на монтировании, `open`-пропа нет.
+  Данные, которые нужно «наложить» на загрузку (черновик исключений),
+  выводятся при рендере: `draft = changes ?? saved ?? null`.
+
+### oxlint на WS-хуке: set-state-in-effect / exhaustive-deps (15.11)
+- **Симптом:** `setStatus('closed')` в эффекте и «missing dependency 'active'»
+  в `useRoomEvents`.
+- **Причина:** синхронный setState в эффекте каскадит рендеры; `active`
+  выведен из deps, но линтер этого не знает.
+- **Решение:** статус «закрыто» выводить при рендере
+  (`active ? socketStatus : 'closed'`), а `active` добавить в deps
+  корректности ради — значение меняется только вместе с roomCode/token.
+
 ### ci.yml падает за 0 секунд: «Unrecognized named-value: 'hashFiles'» (15.11)
 - **Симптом:** run по `.github/workflows/ci.yml` завершается за 0s, чек-ранов
   нет, баннер «This run likely failed because of a workflow file issue».

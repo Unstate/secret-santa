@@ -31,6 +31,29 @@ pub struct SavedExclusion {
     blocked_recipient_id: Uuid,
 }
 
+pub async fn get_exclusions(
+    State(state): State<AppState>,
+    Path(code): Path<String>,
+    organizer: Organizer,
+) -> Result<Json<Vec<SavedExclusion>>, ApiError> {
+    let room = db::rooms::find_by_code(&state.db, &code)
+        .await?
+        .ok_or(ApiError::RoomNotFound)?;
+    if organizer.room_id != room.id {
+        return Err(ApiError::Forbidden);
+    }
+
+    let pairs = db::exclusions::list_by_room(&state.db, room.id).await?;
+    let saved = pairs
+        .into_iter()
+        .map(|(player_id, blocked_recipient_id)| SavedExclusion {
+            player_id,
+            blocked_recipient_id,
+        })
+        .collect();
+    Ok(Json(saved))
+}
+
 pub async fn put_exclusions(
     State(state): State<AppState>,
     Path(code): Path<String>,

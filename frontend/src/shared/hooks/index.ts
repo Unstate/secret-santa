@@ -1,5 +1,8 @@
 export { usePost } from './usePost'
 export { useGet } from './useGet'
 export { usePatch } from './usePatch'
+export { usePut } from './usePut'
+export { useRoomEvents } from './useRoomEvents'
+export { useDocumentTitle } from './useDocumentTitle'
 export { toApiError } from './request'
 export type { RequestResult } from './request'

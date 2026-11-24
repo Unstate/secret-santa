@@ -1,7 +1,10 @@
+import { useDocumentTitle } from '@/shared/hooks'
 import { Card } from '@/shared/ui'
 import styles from './NotFoundPage.module.scss'
 
 export function NotFoundPage() {
+  useDocumentTitle('Страница не найдена')
+
   return (
     <main className={styles.page}>
       <Card>
